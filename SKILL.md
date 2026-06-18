@@ -112,6 +112,12 @@ with pdfplumber.open("/path/to/doc.pdf") as pdf:
 
 **设计系统**：Apple WWDC 极简文档风格。完整 HTML/CSS/JS 骨架见 `templates/fastread.html`。
 
+**模板读取协议**：
+1. 先读取 Skill 根目录下的 `templates/fastread.html`，并以它作为 HTML/CSS/JS 骨架。
+2. 在 Hermes / Claude 环境中，优先用 `skill_view(name="pageturner", file_path="templates/fastread.html")` 或等价的 Skill 资源读取能力加载模板；如果有文件系统访问权，再读取 `<skill_dir>/templates/fastread.html`。
+3. 不要只因为当前工作目录找不到 `templates/fastread.html` 就判定模板不可用；相对路径必须以 Skill 根目录为基准。
+4. 只有在该 Skill 是通过单文件 `SKILL.md` URL 安装、或运行环境没有同步/挂载 `templates/` 目录时，才允许说模板文件不可用；此时按下方设计规范重建同等结构，并在最终说明中提示需要用完整仓库安装 Skill。
+
 **四类核心输出能力**：
 
 #### 4a. 数据速览看板
