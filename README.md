@@ -1,4 +1,4 @@
-# PageTurner Skills / 翻书人 Skills 
+# PageTurner Skill / 翻书人 Skill 
 
 <div align="center">
 
