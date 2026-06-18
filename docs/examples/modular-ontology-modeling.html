@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Modular Ontology Modeling 中文快读版</title>
+<style>
+  :root {
+    --ink: #1d1d1f;
+    --muted: #65676d;
+    --bg: #ffffff;
+    --alt: #f5f6f3;
+    --accent: #0b7f75;
+    --violet: #5e5ce6;
+    --gold: #a76712;
+    --red: #a43f32;
+    --line: rgba(29, 29, 31, .12);
+    --soft-teal: rgba(11, 127, 117, .08);
+    --soft-violet: rgba(94, 92, 230, .08);
+    --soft-gold: rgba(167, 103, 18, .10);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font: 18px/1.72 -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", "Noto Sans SC", sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .progress {
+    position: fixed;
+    inset: 0 auto auto 0;
+    height: 2px;
+    width: 0;
+    background: linear-gradient(90deg, var(--accent), var(--gold));
+    z-index: 20;
+  }
+  .page-num {
+    position: fixed;
+    right: 22px;
+    bottom: 22px;
+    z-index: 20;
+    padding: 5px 11px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, .86);
+    backdrop-filter: blur(12px);
+    color: var(--muted);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+  .cover, .stats-dashboard, section {
+    padding: 78px max(28px, calc((100% - 980px) / 2));
+  }
+  .cover {
+    min-height: 94vh;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 380px;
+    gap: 50px;
+    align-items: center;
+    background: linear-gradient(180deg, #f6f7f2 0%, #fff 100%);
+    border-top: 4px solid var(--accent);
+  }
+  .eyebrow, .kicker, .figure-label {
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 760;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+  }
+  h1 {
+    margin: 22px 0 20px;
+    font-size: 62px;
+    line-height: 1.08;
+    letter-spacing: 0;
+  }
+  .subtitle {
+    max-width: 700px;
+    margin: 0 0 42px;
+    color: var(--muted);
+    font-size: 23px;
+    line-height: 1.58;
+  }
+  .meta { color: var(--muted); font-size: 14px; line-height: 1.8; }
+  .meta strong { color: var(--ink); }
+  .cover-figure {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+    padding: 18px;
+    box-shadow: 0 22px 60px rgba(20, 22, 28, .10);
+  }
+  .recipe-map {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .node {
+    min-height: 56px;
+    display: grid;
+    align-content: center;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px;
+    background: var(--alt);
+    font-size: 12px;
+    font-weight: 680;
+  }
+  .node strong { display: block; font-size: 13px; }
+  .node span { color: var(--muted); font-weight: 500; }
+  .node.accent { background: var(--soft-teal); border-color: rgba(11,127,117,.22); color: var(--accent); }
+  .stats-dashboard { background: var(--alt); text-align: center; }
+  .dash-label { margin-bottom: 30px; }
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 18px;
+  }
+  .stat-cell {
+    border-top: 1px solid var(--line);
+    padding-top: 18px;
+    text-align: left;
+  }
+  .stat-cell .num {
+    font-size: 42px;
+    line-height: 1;
+    font-weight: 760;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-cell .label {
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+  section:nth-of-type(even) { background: var(--alt); }
+  h2 {
+    margin: 8px 0 16px;
+    font-size: 36px;
+    line-height: 1.22;
+    letter-spacing: 0;
+  }
+  h3 {
+    margin: 34px 0 10px;
+    font-size: 23px;
+    line-height: 1.3;
+  }
+  p { max-width: 800px; margin: 0 0 16px; }
+  .lead { color: var(--muted); font-size: 19px; }
+  .figure {
+    margin: 32px 0;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+    padding: 24px;
+  }
+  .figure-label { margin-bottom: 18px; }
+  .workflow {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .step {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 14px;
+    background: var(--alt);
+    min-height: 138px;
+  }
+  .step b { display: block; margin-bottom: 8px; }
+  .step span { color: var(--muted); font-size: 13px; }
+  .ontology-graph {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .entity {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 14px;
+    background: #fff;
+  }
+  .entity strong { display: block; }
+  .entity span { color: var(--muted); font-size: 13px; }
+  .entity.primary { background: var(--soft-teal); border-color: rgba(11,127,117,.22); color: var(--accent); }
+  .matrix {
+    display: grid;
+    grid-template-columns: 140px repeat(4, minmax(0, 1fr));
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+    font-size: 14px;
+  }
+  .matrix div {
+    min-height: 56px;
+    padding: 11px;
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    background: #fff;
+  }
+  .matrix div:nth-child(5n) { border-right: 0; }
+  .matrix .head { background: var(--alt); color: var(--muted); font-size: 12px; font-weight: 760; letter-spacing: .08em; text-transform: uppercase; }
+  .risk-low { background: rgba(11,127,117,.08) !important; }
+  .risk-mid { background: rgba(167,103,18,.12) !important; }
+  .risk-high { background: rgba(164,63,50,.10) !important; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 26px 0;
+    font-size: 15px;
+  }
+  th, td {
+    padding: 12px 13px;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    color: var(--muted);
+    font-size: 12px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+  blockquote {
+    max-width: 820px;
+    margin: 28px 0;
+    padding: 20px 24px;
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    background: #fbfbf9;
+    color: var(--muted);
+  }
+  .question-list {
+    display: grid;
+    gap: 12px;
+    margin-top: 24px;
+  }
+  .cq {
+    display: grid;
+    grid-template-columns: 54px 1fr;
+    gap: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  .cq b {
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+  .checklist {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 22px;
+  }
+  .check {
+    border-top: 1px solid var(--line);
+    padding-top: 15px;
+  }
+  .check strong { display: block; margin-bottom: 6px; }
+  .check span { color: var(--muted); font-size: 14px; }
+  .source {
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 14px;
+  }
+  @media (max-width: 900px) {
+    body { font-size: 17px; }
+    .page-num { display: none; }
+    .cover, .stats-dashboard, section { padding: 52px 22px; }
+    .cover { min-height: auto; grid-template-columns: 1fr; gap: 28px; }
+    h1 { font-size: 42px; }
+    .subtitle { font-size: 20px; margin-bottom: 28px; }
+    .stat-grid, .workflow, .ontology-graph, .checklist { grid-template-columns: 1fr; }
+    .matrix { grid-template-columns: 1fr; }
+    .matrix div, .matrix div:nth-child(5n) { border-right: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="page-num" id="pageNum">1 / 10</div>
+
+<main>
+  <div class="cover page">
+    <div>
+      <div class="eyebrow">PageTurner Example · 本体论论文</div>
+      <h1>Modular Ontology Modeling with Ontology Design Patterns</h1>
+      <p class="subtitle">围绕“烹饪食谱本体”的中文快读版：从用例、能力问题、设计模式到模块化组合，把本体建模变成可治理的工程流程。</p>
+      <div class="meta"><strong>Pascal Hitzler · Adila Krisnadhi</strong> · 2018 · arXiv:1808.08433 · 示例输出：结构化中文 HTML</div>
+    </div>
+    <div class="cover-figure" aria-label="烹饪食谱本体缩略图">
+      <div class="figure-label">Recipe Ontology Snapshot</div>
+      <div class="recipe-map">
+        <div class="node accent"><strong>Recipe</strong><span>食谱</span></div>
+        <div class="node"><strong>Ingredient</strong><span>食材</span></div>
+        <div class="node"><strong>CookingStep</strong><span>步骤</span></div>
+        <div class="node"><strong>Tool</strong><span>工具</span></div>
+        <div class="node"><strong>Quantity</strong><span>数量</span></div>
+        <div class="node accent"><strong>Pattern</strong><span>复用模式</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-dashboard page">
+    <div class="kicker dash-label">数据速览</div>
+    <div class="stat-grid">
+      <div class="stat-cell"><div class="num">2018</div><div class="label">教程发布年份</div></div>
+      <div class="stat-cell"><div class="num">22</div><div class="label">原文 PDF 页数</div></div>
+      <div class="stat-cell"><div class="num">5</div><div class="label">推荐建模阶段</div></div>
+      <div class="stat-cell"><div class="num">4</div><div class="label">高频模式类型</div></div>
+      <div class="stat-cell"><div class="num">OWL</div><div class="label">目标表达语言</div></div>
+      <div class="stat-cell"><div class="num">CQ</div><div class="label">以能力问题驱动验收</div></div>
+    </div>
+  </div>
+
+  <section class="page">
+    <div class="kicker">一页读懂</div>
+    <h2>这不是一篇“怎么画类图”的文章，而是一本本体建模的施工手册。</h2>
+    <p class="lead">论文通过烹饪食谱案例演示一种模块化方法：先定义用例和能力问题，再选择 Ontology Design Patterns，最后把模式组合成可推理、可维护、可复用的本体。</p>
+    <blockquote>快读判断：如果你在做企业语义层、知识图谱 schema、行业本体或数据治理标准，这篇适合放进团队建模规范的第一课。</blockquote>
+  </section>
+
+  <section class="page">
+    <div class="kicker">流程图</div>
+    <h2>先定义问题，再建模；先选模式，再写 OWL。</h2>
+    <p>PageTurner 对本体论文的处理重点，是把长段方法论转成可执行流程。下面的五步图就是这类论文最应该被可视化的部分。</p>
+    <div class="figure">
+      <div class="figure-label">Recommended Workflow</div>
+      <div class="workflow">
+        <div class="step"><b>1. Use Case</b><span>明确使用场景和边界，避免一上来就追求“完整世界”。</span></div>
+        <div class="step"><b>2. Competency Questions</b><span>写出本体必须回答的问题，作为建模验收标准。</span></div>
+        <div class="step"><b>3. Pattern Selection</b><span>寻找可复用的 Ontology Design Patterns。</span></div>
+        <div class="step"><b>4. Module Assembly</b><span>把模式实例化为模块，再通过关系组合。</span></div>
+        <div class="step"><b>5. Test & Iterate</b><span>用 CQ 和推理检查模型，再回到用例迭代。</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="page">
+    <div class="kicker">概念图</div>
+    <h2>烹饪食谱案例把“对象、过程、数量、工具”拆成模块。</h2>
+    <p>本体论论文容易陷在术语里。快读页会把核心类和关系抽出来，给读者一个“先看图再读细节”的入口。</p>
+    <div class="figure">
+      <div class="figure-label">Recipe Ontology · Concept Map</div>
+      <div class="ontology-graph">
+        <div class="entity primary"><strong>Recipe</strong><span>hasStep / usesIngredient / requiresTool</span></div>
+        <div class="entity"><strong>Ingredient</strong><span>Food item, amount, unit, preparation state</span></div>
+        <div class="entity"><strong>CookingStep</strong><span>action, temporal order, input, output</span></div>
+        <div class="entity"><strong>Quantity</strong><span>numeric value + measurement unit</span></div>
+        <div class="entity"><strong>Tool</strong><span>pan, oven, knife, bowl, other equipment</span></div>
+        <div class="entity primary"><strong>Design Pattern</strong><span>可复用的建模片段</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="page">
+    <div class="kicker">能力问题</div>
+    <h2>Competency Questions 是本体质量的早期验收标准。</h2>
+    <p>如果一个本体回答不了它承诺回答的问题，类和属性再多也只是“看起来很丰富”。PageTurner 会把这类问题抽成清单，方便团队评审。</p>
+    <div class="question-list">
+      <div class="cq"><b>CQ-01</b><span>某个食谱需要哪些食材？每种食材需要多少数量和单位？</span></div>
+      <div class="cq"><b>CQ-02</b><span>某个步骤之前必须完成哪些步骤？是否存在顺序约束？</span></div>
+      <div class="cq"><b>CQ-03</b><span>替换某种食材后，哪些步骤、工具或约束需要更新？</span></div>
+      <div class="cq"><b>CQ-04</b><span>哪些食谱共享相同的烹饪动作、工具或食材模式？</span></div>
+      <div class="cq"><b>CQ-05</b><span>一个食谱是否满足某种饮食限制或营养条件？</span></div>
+    </div>
+  </section>
+
+  <section class="page">
+    <div class="kicker">模式库</div>
+    <h2>Ontology Design Patterns 是“不要从零发明”的纪律。</h2>
+    <table>
+      <thead><tr><th>Pattern</th><th>解决的问题</th><th>在食谱案例中的映射</th><th>团队价值</th></tr></thead>
+      <tbody>
+        <tr><td>Part-Whole</td><td>整体与组成部分</td><td>Recipe 由多个 CookingStep 组成</td><td>避免 hasPart / partOf 语义混乱</td></tr>
+        <tr><td>Sequence</td><td>步骤顺序与依赖</td><td>Step A precedes Step B</td><td>让流程可以被检查和推理</td></tr>
+        <tr><td>Description & Situation</td><td>上下文条件与角色</td><td>同一食材在不同步骤中扮演不同角色</td><td>减少硬编码类爆炸</td></tr>
+        <tr><td>Quantity</td><td>数值、单位、度量</td><td>200 g flour, 15 min bake time</td><td>为检索、换算和校验留下接口</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="page">
+    <div class="kicker">数据可视化</div>
+    <h2>本体建模风险矩阵：哪些环节最容易失控？</h2>
+    <p>PageTurner 可以把论文里的方法提醒改写成治理视角的风险图，便于团队讨论“我们现在卡在哪一步”。</p>
+    <div class="figure">
+      <div class="figure-label">Modeling Risk Matrix</div>
+      <div class="matrix" role="table" aria-label="本体建模风险矩阵">
+        <div class="head">风险</div><div class="head">Use Case</div><div class="head">CQ</div><div class="head">Pattern</div><div class="head">Module</div>
+        <div>Scope Creep</div><div class="risk-high">高：用例不收敛会不断加类</div><div class="risk-mid">中：问题可约束范围</div><div class="risk-low">低</div><div class="risk-mid">中</div>
+        <div>Granularity Drift</div><div class="risk-mid">中</div><div class="risk-high">高：问题粒度不一</div><div class="risk-mid">中</div><div class="risk-high">高：模块边界摇摆</div>
+        <div>Semantic Mismatch</div><div class="risk-low">低</div><div class="risk-mid">中</div><div class="risk-high">高：模式选错会带偏语义</div><div class="risk-mid">中</div>
+        <div>Validation Gap</div><div class="risk-mid">中</div><div class="risk-high">高：没有 CQ 就难验收</div><div class="risk-low">低</div><div class="risk-mid">中</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="page">
+    <div class="kicker">案例拆解</div>
+    <h2>“食谱”只是例子，真正可迁移的是建模动作。</h2>
+    <p>读这篇教程时，不要把注意力停在菜谱领域。它展示的是一种通用动作：把领域知识拆成对象、过程、约束、上下文和数量，再分别寻找成熟模式。</p>
+    <table>
+      <thead><tr><th>食谱领域</th><th>企业知识图谱里的等价物</th><th>建模启发</th></tr></thead>
+      <tbody>
+        <tr><td>Recipe</td><td>业务流程 / 服务蓝图 / 产品方案</td><td>把整体对象拆成可复用模块</td></tr>
+        <tr><td>CookingStep</td><td>审批步骤 / 工艺环节 / 任务节点</td><td>顺序和依赖需要显式建模</td></tr>
+        <tr><td>Ingredient</td><td>输入物料 / 数据字段 / 资源</td><td>同一对象在不同上下文中角色不同</td></tr>
+        <tr><td>Quantity</td><td>KPI / 金额 / 规格参数 / 阈值</td><td>数值和单位要分离，方便校验与换算</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="page">
+    <div class="kicker">团队落地清单</div>
+    <h2>把这篇论文变成团队规范，可以从 6 个检查点开始。</h2>
+    <div class="checklist">
+      <div class="check"><strong>用例是否写成边界声明？</strong><span>写清楚本体服务什么，不服务什么。</span></div>
+      <div class="check"><strong>能力问题是否可测试？</strong><span>每个 CQ 都应该能映射到查询或推理检查。</span></div>
+      <div class="check"><strong>是否复用已有模式？</strong><span>优先找 pattern，再决定是否自定义。</span></div>
+      <div class="check"><strong>模块边界是否稳定？</strong><span>把变化频率不同的概念拆开。</span></div>
+      <div class="check"><strong>命名是否一致？</strong><span>类、属性、实例命名必须跨模块可读。</span></div>
+      <div class="check"><strong>是否保留迭代记录？</strong><span>每次改模型都要能追溯到 CQ 或用例变化。</span></div>
+    </div>
+  </section>
+
+  <section class="page source">
+    <div class="kicker">来源与说明</div>
+    <h2>原文链接</h2>
+    <p>论文：<a href="https://arxiv.org/abs/1808.08433">A Tutorial on Modular Ontology Modeling with Ontology Design Patterns · arXiv:1808.08433</a>。</p>
+    <p>本页是 PageTurner 的示例快读页，用于展示本体论论文的结构解析、流程图、概念图、能力问题清单和风险矩阵；不是官方译本，也不替代逐段学术引用。</p>
+  </section>
+</main>
+
+<script>
+(function () {
+  var pages = Array.prototype.slice.call(document.querySelectorAll('.page'));
+  var progress = document.getElementById('progress');
+  var pageNum = document.getElementById('pageNum');
+  var current = 0;
+  function update(index) {
+    current = Math.max(0, Math.min(pages.length - 1, index));
+    if (progress) progress.style.width = ((current + 1) / pages.length * 100) + '%';
+    if (pageNum) pageNum.textContent = (current + 1) + ' / ' + pages.length;
+  }
+  function go(delta) {
+    update(current + delta);
+    pages[current].scrollIntoView({ behavior: 'smooth' });
+    history.replaceState(null, '', '#p' + current);
+  }
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'ArrowRight' || event.key === 'PageDown') { event.preventDefault(); go(1); }
+    if (event.key === 'ArrowLeft' || event.key === 'PageUp') { event.preventDefault(); go(-1); }
+    if (event.key === 'Home') { event.preventDefault(); update(0); pages[0].scrollIntoView({ behavior: 'smooth' }); }
+    if (event.key === 'End') { event.preventDefault(); update(pages.length - 1); pages[pages.length - 1].scrollIntoView({ behavior: 'smooth' }); }
+  });
+  window.addEventListener('scroll', function () {
+    var best = 0;
+    var min = Infinity;
+    pages.forEach(function (page, index) {
+      var dist = Math.abs(page.getBoundingClientRect().top);
+      if (dist < min) { min = dist; best = index; }
+    });
+    update(best);
+  }, { passive: true });
+  update(0);
+})();
+</script>
+</body>
+</html>

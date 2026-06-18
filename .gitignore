@@ -1,0 +1,17 @@
+.DS_Store
+Thumbs.db
+
+# Local outputs
+*.tmp
+*.log
+output/
+outputs/
+dist/
+
+# Source PDFs can be large and may carry redistribution restrictions.
+*.pdf
+
+# Python / Node scratch
+__pycache__/
+.venv/
+node_modules/

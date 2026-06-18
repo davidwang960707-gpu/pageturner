@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>企业 AI 实战手册 —— 51 例成功部署的经验教训</title>
+<style>
+  :root {
+    --ink: #1d1d1f;
+    --ink-muted: #6e6e73;
+    --bg: #ffffff;
+    --bg-alt: #f5f5f7;
+    --accent: #7b61ff;
+    --accent-dim: rgba(123,97,255,0.08);
+    --divider: rgba(0,0,0,0.08);
+    --quote-bg: #fafafa;
+    --case-bg: #f8f7ff;
+    --case-border: rgba(123,97,255,0.2);
+    --table-stripe: rgba(0,0,0,0.02);
+    --red: #ff375f;
+    --gold: #ff9f0a;
+    --mint: #00d4aa;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{font-size:18px;scroll-behavior:smooth}
+  body{
+    font-family: "PingFang SC", "Noto Sans SC", -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;
+    color: var(--ink); background: var(--bg);
+    line-height: 1.7; -webkit-font-smoothing: antialiased;
+  }
+  /* Hero Cover */
+  .cover{
+    min-height: 100vh; display: flex; flex-direction: column; justify-content: center;
+    padding: 80px max(5vw, calc((100vw - 900px)/2));
+    background: linear-gradient(180deg, #f5f5f7 0%, #ffffff 100%);
+    position: relative;
+  }
+  .cover::before{
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+    background: linear-gradient(90deg, var(--accent), #bf5af2, var(--mint));
+  }
+  .cover .eyebrow{
+    font-size: 13px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 32px;
+  }
+  .cover h1{
+    font-size: clamp(42px, 6vw, 80px); font-weight: 700;
+    letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 20px;
+    max-width: 800px;
+  }
+  .cover .subtitle{
+    font-size: clamp(18px, 2.5vw, 26px); color: var(--ink-muted);
+    font-weight: 400; line-height: 1.5; max-width: 680px; margin-bottom: 48px;
+  }
+  .cover .meta{
+    font-size: 15px; color: var(--ink-muted); line-height: 1.8;
+  }
+  .cover .meta strong{color: var(--ink); font-weight: 600;}
+  .cover .meta .divider{display:inline-block;width:24px;height:1px;background:var(--divider);margin:0 12px;vertical-align:middle}
+
+  /* Sections */
+  section{padding: 80px max(5vw, calc((100vw - 800px)/2))}
+  section.alt{background: var(--bg-alt)}
+  section h2{
+    font-size: 36px; font-weight: 700; letter-spacing: -0.02em;
+    line-height: 1.2; margin-bottom: 16px;
+  }
+  section h3{
+    font-size: 24px; font-weight: 600; color: var(--ink);
+    margin: 48px 0 12px;
+  }
+  section h4{
+    font-size: 18px; font-weight: 600; color: var(--accent);
+    text-transform: uppercase; letter-spacing: 0.06em; margin: 40px 0 8px;
+  }
+  section p{margin-bottom: 16px; color: var(--ink); line-height: 1.75}
+  section p.muted{color: var(--ink-muted); font-size: 16px;}
+
+  /* Chapter header */
+  .chapter-num{
+    font-size: 13px; font-weight: 600; letter-spacing: 0.12em;
+    color: var(--accent); margin-bottom: 8px;
+  }
+  .chapter-title{
+    font-size: 32px; font-weight: 700; letter-spacing: -0.02em;
+    line-height: 1.2; margin-bottom: 8px;
+  }
+  .chapter-sub{font-size: 18px; color: var(--ink-muted); margin-bottom: 40px;}
+
+  /* Findings */
+  .finding{margin: 40px 0; padding-left: 0;}
+  .finding-label{
+    font-size: 12px; font-weight: 700; letter-spacing: 0.1em;
+    color: var(--accent); margin-bottom: 8px;
+  }
+  .finding h3{font-size: 22px; margin: 0 0 12px;}
+
+  /* Block quotes */
+  blockquote{
+    margin: 24px 0; padding: 20px 24px;
+    background: var(--quote-bg); border-left: 3px solid var(--accent);
+    font-style: italic; color: var(--ink-muted); line-height: 1.6;
+    border-radius: 0 8px 8px 0;
+  }
+  blockquote .attr{display:block; margin-top: 8px; font-style: normal; font-size: 13px; color: var(--accent); font-weight: 600;}
+
+  /* Case study */
+  .case-study{
+    margin: 48px 0; padding: 40px;
+    background: var(--case-bg); border: 1px solid var(--case-border);
+    border-radius: 12px;
+  }
+  .case-study .case-label{
+    font-size: 11px; font-weight: 700; letter-spacing: 0.14em;
+    color: var(--accent); margin-bottom: 4px;
+  }
+  .case-study h4{font-size: 22px; color: var(--ink); margin: 0 0 4px; text-transform: none; letter-spacing: normal;}
+  .case-study .case-meta{font-size: 13px; color: var(--ink-muted); margin-bottom: 24px;}
+
+  /* Tables */
+  table{width:100%; border-collapse:collapse; margin:24px 0; font-size:15px}
+  th{text-align:left; font-weight:600; font-size:12px; letter-spacing:0.06em; color:var(--ink-muted); padding:10px 14px; border-bottom:2px solid var(--divider)}
+  td{padding:10px 14px; border-bottom:1px solid var(--divider); line-height:1.5}
+  tr:nth-child(even) td{background:var(--table-stripe)}
+  .tnum{font-variant-numeric:tabular-nums}
+
+  /* Stat highlights */
+  .stat-bar{
+    display: flex; gap: 32px; margin: 32px 0; flex-wrap: wrap;
+  }
+  .stat-item{flex:1; min-width:150px}
+  .stat-item .num{font-size:48px; font-weight:700; letter-spacing:-0.03em; line-height:1}
+  .stat-item .num.accent{color:var(--accent)}
+  .stat-item .label{font-size:13px; color:var(--ink-muted); margin-top:4px}
+
+  /* Key findings grid */
+  .key-finding{
+    padding: 20px 0; border-bottom: 1px solid var(--divider);
+  }
+  .key-finding .num{
+    display: inline-block; width: 28px; height: 28px; line-height: 28px;
+    background: var(--accent); color: #fff; border-radius: 50%;
+    text-align: center; font-size: 13px; font-weight: 700; margin-right: 12px;
+    flex-shrink: 0;
+  }
+  .key-finding strong{display:block; font-size:17px; margin-bottom:4px}
+
+  /* Nav */
+  .nav-toc{
+    position: fixed; right: 24px; top: 50%; transform: translateY(-50%);
+    z-index: 100; display: flex; flex-direction: column; gap: 8px;
+  }
+  .nav-toc a{
+    display: block; width: 8px; height: 8px; border-radius: 50%;
+    background: var(--divider); transition: all 0.2s;
+  }
+  .nav-toc a:hover{background: var(--accent); transform: scale(1.3);}
+
+  hr.section-divider{
+    border: none; border-top: 1px solid var(--divider);
+    margin: 60px 0; width: 60px;
+  }
+  hr.full{width: 100%;}
+
+  @media (max-width: 768px){
+    section{padding: 48px 24px}
+    .cover{padding: 48px 24px}
+    .stat-bar{gap: 16px}
+    .stat-item .num{font-size: 32px}
+    .nav-toc{display:none}
+    section h2{font-size: 28px}
+    .case-study{padding: 24px}
+  }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <div class="eyebrow">Stanford Digital Economy Lab · 2026年4月</div>
+  <h1>企业 AI 实战手册</h1>
+  <div class="subtitle">来自 51 例成功部署的经验教训</div>
+  <div class="meta">
+    <strong>Elisa Pereira</strong><span class="divider"></span>
+    <strong>Alvin Wang Graylin</strong><span class="divider"></span>
+    <strong>Erik Brynjolfsson</strong>
+    <br>斯坦福数字经济实验室 · 斯坦福大学
+  </div>
+</div>
+
+<!-- FOREWORD -->
+<section>
+  <h2>前言</h2>
+  <p>今天，关于人工智能的预测和情绪调查从不匮乏。每周都有新的预测和争论：AI 是否有用、哪些岗位会消失、哪些行业将被颠覆、哪些公司会胜出。但当我们与真正在企业内部部署 AI 的高管交谈时，听到的是另一套问题——不是五年后可能发生什么，而是现在正在发生什么。不是抽象框架，而是实际现实。</p>
+  <p>这份报告源于一个朴素的信念：关于 AI 落地的洞见，最有价值的不在于假设或预测。它们藏在那些已经走过这条路的人的模式之中。</p>
+  <p>我们着手构建一些实证性的东西。记录那些真正交付了商业价值的真实用例。描绘那些不仅仅在试验 AI、而是成功规模化部署它的组织的实践。我们追求深度——去理解那些不会出现在新闻稿中的陷阱，那些区分成功试点和失败试点的微妙差异，以及那些任何供应商白皮书都不会告诉你的组织现实。</p>
+  <p>在 5 个月的时间里，我们研究了 51 个企业案例。我们发现，有些转型以周为单位，有些则以年为单位。相同的技术，相同的用例，截然不同的结果。差异从来不是 AI 模型。差异从来是组织——它的准备程度、它的流程、它的领导力、它接受改变和失败的意愿。</p>
+  <p>我们希望这些发现既是一面镜子，也是一张地图——映照出你的组织可能处在什么位置，并照亮你可以自信前行的路径。</p>
+  <p class="muted">— Elisa Pereira, Alvin Wang Graylin & Erik Brynjolfsson，斯坦福数字经济实验室</p>
+</section>
+
+<!-- CONTRIBUTORS -->
+<section class="alt">
+  <h2>作者简介</h2>
+  <div style="margin-bottom:32px">
+    <h4 style="margin-top:0">Elisa Pereira</h4>
+    <p>斯坦福数字经济实验室研究员，斯坦福商学院 MSx 候选人。拥有风险投资背景，在拉丁美洲亲手构建了数十个企业 AI 解决方案。她目前的研究专注于衡量这些部署的真实世界影响，识别成功实施的模式，并探索拉丁美洲如何建立技术主权。</p>
+  </div>
+  <div style="margin-bottom:32px">
+    <h4 style="margin-top:0">Alvin Wang Graylin</h4>
+    <p>斯坦福数字经济实验室数字研究员，作家、连续创业者和技术高管，在 AI、XR、网络安全和半导体行业拥有超过 35 年经验。现任虚拟世界协会主席、亚洲协会政策研究所 CCA 高级研究员、MIT 讲师，为政府、组织和企业提供技术转型咨询。他的著作《Our Next Reality》探讨了 AI 和沉浸式技术将在未来十年如何重塑我们的世界。</p>
+  </div>
+  <div style="margin-bottom:0">
+    <h4 style="margin-top:0">Erik Brynjolfsson</h4>
+    <p>斯坦福数字经济实验室主任，斯坦福大学 Jerry Yang 和 Akiko Yamazaki 教授，斯坦福人本中心 AI 研究所 (HAI) 高级研究员。他还担任 SIEPR 的 Ralph Landau 高级研究员、斯坦福商学院和经济学系客座教授，以及 NBER 研究助理。他是信息经济学领域引用量最高的作者之一，合著了数百篇文章和包括《第二次机器革命》在内的多部著作。</p>
+  </div>
+</section>
+
+<!-- MACRO CONTEXT -->
+<section>
+  <h4>宏观背景</h4>
+  <h2>为什么企业 AI 落地此刻至关重要</h2>
+  <p>像 AI 这样的通用技术，需要并促成了在流程再造、劳动力发展和组织重构方面的重大互补性投资。这些投资大多是无形资产，在国民账户中被严重低估——这意味着在生产力的最初几年，增长被系统性低估，而在后期收益兑现时又被高估。Brynjolfsson、Rock 和 Syverson (2021) 将这一观察形式化为"生产力 J 曲线"模型。</p>
+  <p>宏观经济的结果取决于组织的部署方式，而非技术本身。我们面临一个"生产力分叉"：AI 可以增强工人、创造新能力，也可以主要自动化现有任务、削减人力。所选择的路径将塑造未来几十年的经济增长。</p>
+  <p>一些就业效应已经显现。对覆盖数百万美国工人的高频工资单数据的分析发现，在 AI 暴露岗位上的早期职业工人经历了 <strong>16% 的相对就业下降</strong>，其中 22-25 岁的软件开发人员下降了近 20%。这些"煤矿中的金丝雀"表明，许多人预期的劳动力市场混乱已不再是假设。</p>
+</section>
+
+<section class="alt">
+  <h4>研究定位</h4>
+  <h2>为什么做这项研究</h2>
+  <p>尽管企业在 AI 上投入了数十亿美元，MIT NANDA 计划 2025 年的一项研究得出结论：<strong>95% 的生成式 AI 试点项目未能产生可衡量的财务影响</strong>。失败的原因不在模型质量，而在于糟糕的工作流集成和错位的组织激励。</p>
+  <p>相比之下，我们的目标是理解 AI 被成功部署的案例。我们深入研究了 51 个企业 AI 交付可衡量价值的案例。这些组织做对了什么？集成实际花了多少成本？阻力来自哪里——更重要的是，它是如何被克服的？</p>
+  <p>我们透明地承认这确实存在一个已知局限：<strong>正向结果的选择偏差</strong>。我们的发现描述了成功的样子和通往成功的道路；我们并不声称提供了关于成功在整个经济中有多普遍的代表性数据。</p>
+  <blockquote>"幸福的家庭都是相似的，不幸的家庭各有各的不幸。"<span class="attr">— 列夫·托尔斯泰</span></blockquote>
+</section>
+
+<!-- METHODOLOGY -->
+<section>
+  <h4>方法论</h4>
+  <h2>研究样本与方法</h2>
+  <p>本研究基于与已将 AI 解决方案规模化部署的高管和项目负责人的深度访谈。我们专注于已超越试点阶段、正交付可衡量商业价值的项目。</p>
+  
+  <div class="stat-bar">
+    <div class="stat-item"><div class="num accent">51</div><div class="label">案例研究</div></div>
+    <div class="stat-item"><div class="num accent">41</div><div class="label">组织</div></div>
+    <div class="stat-item"><div class="num accent">7</div><div class="label">国家</div></div>
+    <div class="stat-item"><div class="num accent">5</div><div class="label">大洲</div></div>
+    <div class="stat-item"><div class="num accent">1M+</div><div class="label">覆盖员工数</div></div>
+  </div>
+  
+  <h3>筛选标准</h3>
+  <p>四个维度定义了我们选择分析的成熟 AI 项目：<strong>运营稳定性</strong>（系统已上线，集成到真实工作流中，并在生产中持续使用）、<strong>持续业务采用</strong>（跨职能团队积极依赖 AI 系统进行决策超过 3 个月）、<strong>量化价值创造</strong>（明确的生产力提升、收入增长或客户满意度等业务成果）、<strong>可扩展性与可复制性</strong>（可跨团队、地区或业务单元扩展或复制）。</p>
+  
+  <h3>样本构成</h3>
+  <p>我们覆盖了 9 个行业，在制造业、金融服务和技术领域尤为深入。案例覆盖的业务功能范围广泛，这种多样性使我们能够识别超越特定用例的模式。</p>
+  
+  <h3>局限性</h3>
+  <p>本研究主要依赖受访者的自述数据。虽然我们在可能的情况下进行了交叉验证并聚焦于记录成果的成熟项目，但读者应考虑潜在的正向选择偏差。所有数据均已匿名化和聚合处理。</p>
+</section>
+
+<!-- KEY FINDINGS SUMMARY -->
+<section class="alt">
+  <h4>核心发现</h4>
+  <h2>11 条关键发现摘要</h2>
+  
+  <div class="key-finding">
+    <strong><span class="num">1</span> 技术不是最难的部分。</strong>
+    77% 的最难挑战是看不见的无形成本：变革管理、数据质量和流程再造。61% 的成功项目包含至少一次此前的失败，其成本从不体现在最终 ROI 中。
+  </div>
+  <div class="key-finding">
+    <strong><span class="num">2</span> 时间线差异是组织性的，而非技术性的。</strong>
+    相似的用例在有的公司几周完成，在另一些公司则耗时数年。差异在于高管支持、现有组织流程和终端用户意愿。
+  </div>
+  <div class="key-finding">
+    <strong><span class="num">3</span> 上报模式效果更好。</strong>
+    上报模式（AI 自主处理 80%+，人类仅审查例外）实现了 71% 的中位生产力提升，而审批模式仅为 30%。
+  </div>
+  <div class="key-finding">
+    <strong><span class="num">4</span> 高管支持关乎行动，而非批准。</strong>
+    有效的赞助者每周清除障碍、桥接业务与技术团队、将 AI 采用与公司 OKR 挂钩。最关键的是，他们创造了允许失败的文化。
+  </div>
+  <div class="key-finding">
+    <strong><span class="num">5</span> 职能部门是最常见的阻力来源。</strong>
+    法务、HR、风险与合规部门是最高频的阻力来源（35%），超过内部终端用户（23%）。
+  </div>
+  <div class="key-finding">
+    <strong><span class="num">6</span> 减员是常见的，但不是必然的。</strong>
+    减员是 45% 的部署中最大的结果，但替代方案（避免招聘、重新部署、不减员）占 55%。
+  </div>
+  <div class="key-finding">
+    <strong><span class="num">7</span> AI 带来的新收入是真实的，但还很稀少。</strong>
+    遵循三种模式：转化式个性化、速度赢得交易、内部工具打包为产品。
+  </div>
+  <div class="key-finding">
+    <strong><span class="num">8</span> Agentic AI 有效，但多数公司尚未使用。</strong>
+    Agentic 实施实现了 71% 的中位生产力提升，而高自动化仅为 40%，但仅占案例的 20%。
+  </div>
+  <div class="key-finding">
+    <strong><span class="num">9</span> 混乱的数据不是瓶颈——如果你围绕它设计。</strong>
+    LLM 解决了许多它们本应难以应对的数据问题。保存一切、连接它们、让模型来做清理。
+  </div>
+  <div class="key-finding">
+    <strong><span class="num">10</span> 安全赋能多于阻碍。</strong>
+    在我们研究的案例中，安全从未是一个纯粹的项目杀手。最初是障碍的要求后来使项目能够处理敏感数据。
+  </div>
+  <div class="key-finding">
+    <strong><span class="num">11</span> 模型选择对许多用例来说是商品化的。</strong>
+    42% 的实施中，模型选择完全可互换。持久的优势在编排层，而非基础模型。
+  </div>
+</section>
+
+<!-- CHAPTER 1 -->
+<section>
+  <div class="chapter-num">第一章</div>
+  <div class="chapter-title">为什么 AI 商业案例低估了真实投资？</div>
+  <div class="chapter-sub">决定成败的隐形成本</div>
+
+  <h3>已发表的研究发现</h3>
+  <p>规模化需要大量的非模型投资。麦肯锡的研究发现，高绩效 AI 组织在"重塑"业务流程和数据产品上的投入显著更多，而非仅部署模型。埃森哲估计 80-85% 的公司困在"概念验证工厂"阶段——低回报、低规模化成功率。战略规模化者拥有大规模、准确的数据集的可能性远高于未规模化者（61% vs 38%）。更早期的研究发现，每 1 美元的有形技术投资，企业需要花费高达 10 美元在无形投资上。</p>
+
+  <div class="finding">
+    <div class="finding-label">发现 1</div>
+    <h3>77% 的最难挑战是"无形成本"</h3>
+    <p>当我们问实践者"最难修复的是什么"，答案揭示了 AI 预算实际流向了哪里。</p>
+    <blockquote>"所有的困难工作都在流程文档化和数据架构上。如果你能做好这两件事，其他一切都相当简单。"<span class="attr">—— 电信公司高管</span></blockquote>
+    <blockquote>"技术不是瓶颈——组织采用才是失败点。"<span class="attr">—— 专业服务公司高管</span></blockquote>
+  </div>
+
+  <div class="finding">
+    <div class="finding-label">发现 2</div>
+    <h3>61% 在当前成功之前有过失败的 AI 项目</h3>
+    <p>这些失败的实验代表沉没成本，从不体现在"成功"项目的 ROI 中。失败有一个共同模式：团队将 AI 视为技术项目而非流程和变革管理项目。第一次尝试在应用于破碎的工作流程时失败，在由缺乏业务所有权的技术团队领导时失败，或在组织假设模型会修复需要重新设计工作本身的问题时失败。</p>
+    <blockquote>"这实际上是他们第二次尝试用 AI 做招聘流程。最初失败了，因为他们没有考虑偏见，而且他们认为 AI 会直接修复流程，而不需要流程再造。"<span class="attr">—— AI 项目负责人，专业服务公司</span></blockquote>
+  </div>
+
+  <div class="case-study">
+    <div class="case-label">案例研究</div>
+    <h4>物流公司的发票处理</h4>
+    <div class="case-meta">物流 | 财务运营 | 中型企业</div>
+    <p>一家年收入超 10 亿美元的美国物流公司，管理着庞大的冷藏拖车车队。每年收到超过 10 万份来自全国各地维修供应商的发票——从轮胎更换到传感器更换。</p>
+    <p><strong>挑战：</strong>7 名全职员工专门处理发票核对、模板匹配和 ERP 录入。发票通过邮件、传真、电话等各种渠道涌入。</p>
+    <p><strong>隐形工作：</strong>数千个模板缩减到数百个；主题专家在完成日常工作之外审核了数千条 AI 输出；总裁每周参与检查进度；两名初级 IT 员工从第一天起嵌入团队。</p>
+    <p><strong>解决方案：</strong>使用 Azure Document Intelligence 和 Azure OpenAI Service，结合 OCR 解析和 LLM 语义映射，自动读取和理解发票内容，直接将数据写入 MS Dynamics D365。</p>
+    
+    <table>
+      <tr><th>指标</th><th>结果</th></tr>
+      <tr><td>人力（FTE）</td><td>7 → 2</td></tr>
+      <tr><td>处理时间</td><td>&lt; 24小时</td></tr>
+      <tr><td>准确率</td><td>85%</td></tr>
+      <tr><td>上线时间</td><td>8周</td></tr>
+      <tr><td>创造价值</td><td>&gt; $1M</td></tr>
+    </table>
+    
+    <blockquote>"先生们，80% 对我们来说已经完美了。我们可以把这些员工放到另一个瓶颈上去。我理解你可以持续改进，到某个时刻模型将达到 95%，但我们不在乎。我们在乎的是即时的成本节约和消除这些积压。"<span class="attr">—— 物流公司总裁</span></blockquote>
+  </div>
+</section>
+
+<!-- CHAPTER 2 -->
+<section class="alt">
+  <div class="chapter-num">第二章</div>
+  <div class="chapter-title">如何跨越部署与 ROI 之间的"死亡之谷"？</div>
+  <div class="chapter-sub">相似用例中，什么区分了"几周"和"数年"</div>
+
+  <div class="finding">
+    <div class="finding-label">发现 1</div>
+    <h3>时间范围惊人：相似用例从几周到数年不等</h3>
+    <p>一家大型金融科技公司使用 AI 编码代理将数百万行遗留 ETL 代码迁移到现代架构，项目耗时数周。一家科技公司用 AI 重新设计了客户支持系统并在六个月内上线。一家大型银行尝试同样的客户支持用例，报告称项目需要数年时间。</p>
+    <blockquote>"在 AI 代理启动后的几周内，我们就发现了一个明显的机会，可以用极少的工程工时加速迁移。"<span class="attr">—— 金融科技公司高管</span></blockquote>
+  </div>
+
+  <div class="finding">
+    <div class="finding-label">发现 2</div>
+    <h3>三个因素持续加速价值实现</h3>
+    <table>
+      <tr><th>加速因素</th><th>频率</th></tr>
+      <tr><td>高管支持</td><td class="tnum">43%</td></tr>
+      <tr><td>基于现有基础构建</td><td class="tnum">32%</td></tr>
+      <tr><td>终端用户意愿</td><td class="tnum">25%</td></tr>
+    </table>
+    <p>利用现有基础设施或平台的项目明显更快。终端用户真正想要解决方案时，采用摩擦消失——例如在医疗领域，医院系统采用了环境 AI 转录，尽管 ROI 不明确，仅仅因为医生渴望减轻负担。</p>
+  </div>
+
+  <div class="finding">
+    <div class="finding-label">发现 3</div>
+    <h3>四个因素持续拖慢项目</h3>
+    <table>
+      <tr><th>延迟因素</th><th>频率</th></tr>
+      <tr><td>学习曲线与迭代</td><td class="tnum">25%</td></tr>
+      <tr><td>数据质量与准备</td><td class="tnum">21%</td></tr>
+      <tr><td>监管与合规</td><td class="tnum">21%</td></tr>
+      <tr><td>流程文档缺口</td><td class="tnum">21%</td></tr>
+    </table>
+  </div>
+
+  <div class="finding">
+    <div class="finding-label">发现 4</div>
+    <h3>每个成功项目都使用了迭代方法——100%</h3>
+    <p>在可识别开发方法的案例中，所有案例都使用了迭代方法。没有一个使用传统瀑布式规划。模式是一致的：从小处着手，学习，扩展。</p>
+  </div>
+
+  <div class="case-study">
+    <div class="case-label">案例研究</div>
+    <h4>翻译服务公司的招聘系统</h4>
+    <div class="case-meta">专业服务 | 招聘 | 中型企业</div>
+    <p><strong>第一次尝试——以及它为什么失败：</strong>这是该公司第二次用 AI 做招聘。第一次失败有两个原因：没有考虑筛选算法中的偏见，以及假设 AI 会修复破碎的流程而不解决底层工作流问题。</p>
+    <p><strong>第二次改变的关键：</strong>CEO 亲自接手（而非委派给 CTO），先修复流程再应用 AI，瞄准真正的痛点——招聘团队每天被涌入的申请淹没。</p>
+    <blockquote>"这是给他们的止痛药。不是'嘿，这会很棒'——而是'我快淹死了'。"<span class="attr">—— 专业服务公司高管</span></blockquote>
+    <table>
+      <tr><th>指标</th><th>结果</th></tr>
+      <tr><td>构建时间</td><td>约1个月</td></tr>
+      <tr><td>每个职位耗时</td><td>3小时 → 3分钟</td></tr>
+      <tr><td>筛选效率</td><td>+79%</td></tr>
+      <tr><td>候选人转化率</td><td>+75%</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- CHAPTER 3 -->
+<section>
+  <div class="chapter-num">第三章</div>
+  <div class="chapter-title">多少人类监督是最优的？</div>
+  <div class="chapter-sub">审视 AI 实施中的人类参与度</div>
+
+  <div class="finding">
+    <div class="finding-label">发现 1</div>
+    <h3>适度的人类监督与最高的生产力提升相关</h3>
+    <p>我们根据人类参与度将每个案例分类为三级：</p>
+    <table>
+      <tr><th>模式</th><th>描述</th></tr>
+      <tr><td><strong>上报模式</strong></td><td>AI 自主处理 80%+；人类仅审查例外或抽检</td></tr>
+      <tr><td><strong>审批模式</strong></td><td>AI 完成工作；人类在每次行动前审查和批准每个输出</td></tr>
+      <tr><td><strong>协作模式</strong></td><td>人类和 AI 在每个任务上持续协作</td></tr>
+    </table>
+    <p>上报模式的中位生产力提升为 <strong>71%</strong>，审批模式为 30%，协作模式为 22%。但这部分反映了任务选择——上报模式通常应用于高容量、可恢复的任务。</p>
+  </div>
+
+  <div class="finding">
+    <div class="finding-label">发现 2</div>
+    <h3>最优监督水平因职能而异</h3>
+    <table>
+      <tr><th>职能</th><th>典型 HITL 水平</th><th>平均提升</th></tr>
+      <tr><td>IT 运维</td><td>上报</td><td class="tnum">90%</td></tr>
+      <tr><td>客户支持</td><td>上报</td><td class="tnum">71%</td></tr>
+      <tr><td>理赔处理</td><td>上报</td><td class="tnum">50%</td></tr>
+      <tr><td>现场服务</td><td>审批</td><td class="tnum">80%</td></tr>
+      <tr><td>临床文档</td><td>审批</td><td class="tnum">66%</td></tr>
+      <tr><td>编码</td><td>协作</td><td class="tnum">54%</td></tr>
+    </table>
+  </div>
+
+  <div class="finding">
+    <div class="finding-label">发现 3</div>
+    <h3>当人类监督是显然正确的选择</h3>
+    <p>人类监督不是 AI 不成熟的标志。四种模式：<strong>零错误容忍</strong>（一个错误比一千个正确输出代价更大）、<strong>监管要求</strong>（法律强制人类审查）、<strong>企业风险管理</strong>（感知的自治 AI 风险超过效率收益）、<strong>持续改进</strong>（人类审查者识别 AI 错误模式，反馈到模型改进中）。</p>
+  </div>
+
+  <div class="case-study">
+    <div class="case-label">案例研究</div>
+    <h4>金融服务公司的营销内容</h4>
+    <div class="case-meta">金融服务 | 营销 | 大型企业</div>
+    <p>一家金融服务公司面临内容瓶颈——拥有客户数据可以实现超个性化，但无法快速生成内容。传统代理商工作流每场营销活动需 7 周。团队选择了 <strong>80/20 模式</strong>：AI 处理 80% 的生成，人类提供 20% 的精炼和质量保证。</p>
+    <blockquote>"要在企业级规模运营，你需要 80% 的技术和 20% 的人类精炼。AI 行业尚未达到可以搞定最后 20% 的水平。"<span class="attr">—— 企业 AI 公司战略主管</span></blockquote>
+    <table>
+      <tr><th>指标</th><th>结果</th></tr>
+      <tr><td>上市时间</td><td>7 周 → 6 小时</td></tr>
+      <tr><td>点击率</td><td>提升 2 倍</td></tr>
+      <tr><td>生产效率</td><td>> 80% 时间缩减</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- CHAPTER 4 -->
+<section class="alt">
+  <div class="chapter-num">第四章</div>
+  <div class="chapter-title">什么区分推动结果的赞助者与仅批准预算的人？</div>
+  <div class="chapter-sub">定义有效高管支持的四个活动</div>
+
+  <div class="finding">
+    <div class="finding-label">发现 1</div>
+    <h3>主动掌舵常见，但战略集成推动转型</h3>
+    <table>
+      <tr><th>参与水平</th><th>含义</th><th>占比</th></tr>
+      <tr><td>被动批准</td><td>批准预算，完全委派，几乎无持续参与</td><td class="tnum">—</td></tr>
+      <tr><td>定期监督</td><td>月度审查，被升级时处理障碍</td><td class="tnum">12%</td></tr>
+      <tr><td>主动掌舵</td><td>每周检查，主动清除障碍，参与决策</td><td class="tnum">58%</td></tr>
+      <tr><td>战略集成</td><td>AI 进入公司 OKR，激励与采用挂钩，文化变革</td><td class="tnum">29%</td></tr>
+    </table>
+    <p>主动掌舵对单一职能内的项目有效。但实现组织级转型的 7 个案例全部达到了战略集成。</p>
+  </div>
+
+  <div class="finding">
+    <div class="finding-label">发现 2</div>
+    <h3>有效赞助者的四个活动</h3>
+    <table>
+      <tr><th>活动</th><th>案例数</th></tr>
+      <tr><td>资源分配</td><td class="tnum">59%</td></tr>
+      <tr><td>战略集成</td><td class="tnum">49%</td></tr>
+      <tr><td>组织沟通</td><td class="tnum">32%</td></tr>
+      <tr><td>主动清除障碍</td><td class="tnum">20%</td></tr>
+    </table>
+  </div>
+
+  <div class="finding">
+    <div class="finding-label">发现 3</div>
+    <h3>业务+技术联合赞助解锁跨职能项目</h3>
+    <p>8 个案例显示，业务和技术领导者的联合赞助是关键差异因素。在一家专业服务公司，第一次 AI 推动由 CTO 领导，未能获得牵引力。第二次由 CEO 和人才主管与 CTO 共同推动，成功了。</p>
+    <blockquote>"组织必须知道这是 CEO 主导的事，这不只是 CTO 的项目。当 AI 是技术主导、技术优先时，它行不通——或者说很少行得通。"<span class="attr">—— 专业服务公司高管</span></blockquote>
+  </div>
+
+  <div class="finding">
+    <div class="finding-label">发现 4</div>
+    <h3>有效赞助者给予团队失败的自由</h3>
+    <p>失败仅在特定条件下转化为学习。我们发现了三种策略：<strong>失败中的赞助者连续性</strong>（同一高管赞助了失败和成功的尝试），<strong>控制范围作为失败策略</strong>（73% 的实施从小处开始，63% 明确将试点框定为实验），<strong>反馈循环而非发布期限</strong>（将持续用户反馈和迭代作为第一优先级）。</p>
+    <p>共同线索：在我们审查的所有案例中，没有人因失败的 AI 项目受到惩罚。</p>
+  </div>
+
+  <div class="case-study">
+    <div class="case-label">案例研究</div>
+    <h4>半导体公司的现场服务</h4>
+    <div class="case-meta">硬件制造 | 现场服务 | 大型企业</div>
+    <p>一家为大型企业客户生产固态硬盘的半导体制造商。当客户报告问题时，现场服务工程师需要在诊断前收集技术数据——产品规格、测试库、数据表、工程日志分布在五六个不同团队拥有的不同存储库中。仅数据收集的 SLA 就达 40 小时。</p>
+    <p><strong>早期尝试失败：</strong>工程团队为各自用例构建解决方案，没有协调——没有共享标准，没有采用问责制。</p>
+    <p><strong>赞助者的行动：</strong>AI 领导者升级到 CEO：在每个部门建立 AI 倡导者；将 AI 采用设为公司 OKR；举办 AI 演示日，CEO 出席并颁奖。</p>
+    <table>
+      <tr><th>指标</th><th>结果</th></tr>
+      <tr><td>数据收集时间</td><td>40+ 小时 → &lt; 1 小时</td></tr>
+      <tr><td>具有完整数据的问题</td><td>0% → 95%+</td></tr>
+      <tr><td>产品测试周期</td><td>减少 20%</td></tr>
+    </table>
+    <blockquote>"AI 是一场思维转变，仅此而已。它实际上完全是由变革管理驱动的。"<span class="attr">—— 制造公司 AI 领导者</span></blockquote>
+  </div>
+</section>
+
+<!-- CHAPTER 5 -->
+<section>
+  <div class="chapter-num">第五章</div>
+  <div class="chapter-title">致命阻力从何而来？</div>
+  <div class="chapter-sub">理解阻力的来源以及如何克服</div>
+
+  <div class="finding">
+    <div class="finding-label">发现 1</div>
+    <h3>职能部门——而非终端用户——是最常见的阻力来源</h3>
+    <p>传统观点关注终端用户阻力，但职能部门是最常见的阻断者（35%）。法务部门担心责任，HR 担心变革管理，风险和合规团队担心监管暴露。这些职能有组织权威来减缓或停止项目。</p>
+    <p>IT 职能是一个显著的例外：与其说是阻碍，不如说是赋能者——提供平台基础设施和数据管道。</p>
+    <blockquote>"中层管理者最抗拒，而高级管理层和初级员工更能接受。"<span class="attr">—— 零售公司高管</span></blockquote>
+  </div>
+
+  <div class="finding">
+    <div class="finding-label">发现 2</div>
+    <h3>每个阻力来源都有不同的原因和不同的解决方案</h3>
+    <p><strong>职能部门担心风险</strong>——解决方案是授权而非说服（当 AI 采用通过公司 OKR 影响薪酬时，法务和 HR 找到了赋能而非阻碍的方法）。<strong>C 级别要求 ROI 证明</strong>——解决方案是可衡量的试点。<strong>终端用户不信任不一致性</strong>——解决方案是期望设定。<strong>一线工人害怕被替代</strong>——解决方案是展示具体的前进路径。</p>
+  </div>
+
+  <div class="case-study">
+    <div class="case-label">案例研究</div>
+    <h4>技术服务公司的安全运营</h4>
+    <div class="case-meta">技术服务 | 安全运营 | 中型企业</div>
+    <p>一家拥有 6 人安全运营中心 (SOC) 的技术服务公司，每月处理约 1,500 条安全告警，其中大多数是误报。分析师只能彻底调查高优先级告警。</p>
+    <p><strong>如何克服团队阻力：</strong>背景本身完成了大部分工作——团队已经被淹没且无法覆盖低优先级告警。AI 被定位为救援，而非替代。工作划分直观——AI 处理机械性分类，分析师保留需要专业知识的判断密集型工作。额外带宽被框定为向上的路径——"AI 替代的是你不需要招聘的人，而不是你已有的员工。"</p>
+    <table>
+      <tr><th>指标</th><th>结果</th></tr>
+      <tr><td>告警处理量</td><td>1,500 → 40,000/月</td></tr>
+      <tr><td>告警覆盖率</td><td>高优先级 → 100%</td></tr>
+      <tr><td>团队能力</td><td>6 → 1.5 FTE</td></tr>
+      <tr><td>释放能力</td><td>4.5 FTE 重新部署</td></tr>
+    </table>
+    <p>没有人被裁员。释放的 4.5 FTE 能力被重新部署到威胁狩猎、安全架构和能力建设中。</p>
+  </div>
+</section>
+
+<!-- CHAPTER 6 -->
+<section class="alt">
+  <div class="chapter-num">第六章</div>
+  <div class="chapter-title">当生产力提升很高时，人力会发生什么？</div>
+  <div class="chapter-sub">裁员、重新分配还是冻结招聘？</div>
+
+  <div class="finding">
+    <div class="finding-label">发现 1</div>
+    <h3>裁员是最常见的结果——但不是大多数</h3>
+    <p>我们的数据显示：<strong>裁员 45%</strong>，避免招聘 27%，无裁员（维持原有人力）18%，重新部署 10%。裁员是最大单一类别，但不到一半。目前，公司仍在寻找在不取消职位的情况下捕获 AI 生产力的方法。</p>
+  </div>
+
+  <div class="finding">
+    <div class="finding-label">发现 2</div>
+    <h3>三种不同的策略出现</h3>
+    <p><strong>策略 1：加速而非裁减。</strong>有些公司明确选择将生产力收益再投资到增长中而非成本削减。"关于 AI 是否应该减少人力的辩论：CEO 和 COO 倾向于成本削减；我推动将收益用于加速路线图。"——教育科技公司 CTO。</p>
+    <p><strong>策略 2：重新部署到更高价值的工作。</strong>其他公司将人员从自动化任务转移到需要人类判断的工作上。在一家技术咨询公司，AI 自动化了 80% 的发票处理，但他们将人员移到下一个瓶颈而非裁减团队。</p>
+    <p><strong>策略 3：直接减员。</strong>有些公司确实裁减了员工。在一家 PE 控股的公司，编码领域 88% 的生产力提升导致开发团队从 7 人减少到 3 人。</p>
+    <p><strong>前瞻性警示：</strong>以上发现基于回顾性数据。随着实施成熟、模型改进和成本压力增加，结果分布可能会转变。我们观察到的 45% 裁员率可能代表一个下限，而非上限。</p>
+  </div>
+
+  <div class="case-study">
+    <div class="case-label">案例研究</div>
+    <h4>教育科技公司的工程团队</h4>
+    <div class="case-meta">教育科技 | 工程与内容 | 大型企业</div>
+    <p>一家拥有数千名员工（包括 200+ 技术和 100+ 工程师）的教育科技公司。CTO 实施了三支柱 AI 战略。工程团队使用 GitHub Copilot 和 Cursor 进行了六个月的试点，实现了 <strong>20-30% 的时间和精力缩减</strong>。</p>
+    <p>领导团队面临决策：用收益减员还是再投资？CEO 和 COO 倾向于成本削减。CTO 主张加速。最终决策：<strong>选择加速而非裁减</strong>——公司有大量产品积压，更快交付功能比裁减交付功能的团队产生更多收入。</p>
+    <blockquote>"节省的资源用于加速路线图，而非减少员工。"<span class="attr">—— 教育科技公司 CTO</span></blockquote>
+  </div>
+</section>
+
+<!-- CHAPTER 7 -->
+<section>
+  <div class="chapter-num">第七章</div>
+  <div class="chapter-title">AI 打开了哪些此前关闭的大门？</div>
+  <div class="chapter-sub">企业如何从效率走向新收入、新能力和战略优势</div>
+
+  <div class="finding">
+    <div class="finding-label">发现 1</div>
+    <h3>AI 创造的新收入真实但稀少，并遵循三种模式</h3>
+    <p><strong>转化式个性化。</strong>一家零售公司部署 AI 大规模个性化营销邮件——购买意向提升 40%，实际购买提升 20%。一家外卖公司将基于群体的分段（每段 500 客户）转变为个人级个性化。</p>
+    <blockquote>"以前花三周创建 50 个营销活动，现在可以为每个人创建营销活动。"<span class="attr">—— 外卖公司高管</span></blockquote>
+    <p><strong>速度赢得交易。</strong>一家保险服务公司发现 AI 驱动的合同起草将速度变成了竞争武器，合同从数周缩短到 4 小时。在半导体制造中，将测试周期减少 20% 并将客户问题解决从 40 小时减少到不足 1 小时，改变了公司竞争大型企业客户的方式。</p>
+    <blockquote>"当产品上市时间缩短时，这不是 500 万或 1000 万的节省，而是数亿美元的节省。"<span class="attr">—— 半导体制造商高管</span></blockquote>
+    <p><strong>从洞察到产品。</strong>有些公司发现其内部 AI 能力可以成为收入来源——一家咨询公司将其分析平台的 AI 层打包为产品，预计收入翻倍。一家技术服务公司将内部发票处理方案打包销售给外部客户。</p>
+  </div>
+
+  <div class="finding">
+    <div class="finding-label">发现 2</div>
+    <h3>AI 正在实现从未在路线图上的工作</h3>
+    <p>重写被认为技术上不可能的事：一家拥有超过 1 亿客户的金融科技公司需要将数百万行遗留代码迁移到现代架构——传统估算是 18 个月和 1,000+ 工程师。使用 AI 编码代理，业务部门在数周内完成迁移。一家保险公司发现 AI 可以从头重写遗留系统，比重构更快——原计划 5,000 小时、7 人团队，实际 600 小时、3 人完成。</p>
+    <p>构建本不可能存在的市场情报：一家医疗 AI 公司为完全自费的美容医疗市场构建了销售智能系统——该市场没有理赔数据、没有集中注册、没有结构化数据集。系统抓取公开来源，组装提供商档案，并按估算手术量和增长潜力对潜在客户评分。销售代表首次在从未有过合格管道的市场中拥有了合格管道。</p>
+  </div>
+
+  <div class="case-study">
+    <div class="case-label">案例研究</div>
+    <h4>呼叫中心——从传统呼叫中心到增长引擎</h4>
+    <div class="case-meta">呼叫中心即服务 | 客户关系 | 中型企业</div>
+    <p>一家 CCaaS 公司在 AI 原生竞争对手的压力下，面临双重威胁：按座席定价的模式正在被侵蚀，AI 原生初创公司能从第一天就提供智能路由和自动化解决。挑战不是运营效率，而是战略相关性。</p>
+    <p><strong>解决方案：</strong>管理层将 agentic AI 直接嵌入产品——AI 可以端到端解决工单，而不仅仅是接电话或回答问题，实际关闭问题。</p>
+    <p><strong>结果：</strong>赢得 20+ 个新项目归因于 AI，在独立技术评估中位列客户关系 AI 能力前四名（另外三家是 AI 原生公司），定价模式从卖座席转向卖结果。</p>
+    <blockquote>"我坚信中型和小型公司处于赢得 AI 革命的有利位置——如果你给它们提供正确的能力。"<span class="attr">—— PE 公司合伙人</span></blockquote>
+  </div>
+</section>
+
+<!-- CHAPTER 8 -->
+<section class="alt">
+  <div class="chapter-num">第八章</div>
+  <div class="chapter-title">Agentic AI 是否在产生真正的价值？</div>
+  <div class="chapter-sub">自治 AI 在哪些场景有效，哪些场景更简单的方法更优</div>
+
+  <div class="finding">
+    <div class="finding-label">发现 1</div>
+    <h3>Agentic AI 已在生产中，但大多数实施使用更简单的方法</h3>
+    <table>
+      <tr><th>级别</th><th>定义</th><th>占比</th></tr>
+      <tr><td>Agentic AI</td><td>自主行动，端到端完成多步骤任务，无需人类干预</td><td class="tnum">20%</td></tr>
+      <tr><td>高自动化</td><td>AI 自主处理 >80% 工作，人类仅审查例外或最终输出</td><td class="tnum">34%</td></tr>
+      <tr><td>人机协作</td><td>AI 和人类共同工作，人类审查或批准每个输出</td><td class="tnum">46%</td></tr>
+    </table>
+    <p>Agentic 实施是少数派。这并不代表 agentic AI 失败，而是许多用例尚不需要完全自治即可交付价值。</p>
+  </div>
+
+  <div class="finding">
+    <div class="finding-label">发现 2</div>
+    <h3>Agentic AI 交付更高的生产力，但方差更大</h3>
+    <p>Agentic 实施的中位生产力提升为 <strong>71%</strong>，高自动化为 40%，人机协作为 22%。最高收益来自现场服务，多代理框架自动跨存储库收集数据。随着 agentic 框架成熟，我们预计完全自治类别的用例将增长——编码代理（Claude Code、OpenAI Codex 等）自主运行数天，交付数万行工作代码的情况在最近几个月已不罕见。</p>
+  </div>
+
+  <div class="finding">
+    <div class="finding-label">发现 3</div>
+    <h3>成功的 agentic 实施共享共同特征</h3>
+    <p><strong>高容量、重复性任务。</strong>安全运营处理数千条告警、采购处理数百个决策、客户支持分类工单。<strong>明确的成功标准。</strong>告警是否有效、采购决策是否正确、工单是否解决。<strong>可恢复的错误。</strong>遗漏的告警可后续发现、错误的采购建议可被覆盖、失败的工单解决会升级给人类。<strong>跨系统数据访问。</strong>Agentic AI 需要能够查询多个系统、收集信息并采取行动。</p>
+    <blockquote>"不要只是把 AI 应用到现有流程上。那是个错误。我们正在重新设计工作流，这才是让我们成功的原因。"<span class="attr">—— 科技公司运营主管</span></blockquote>
+  </div>
+
+  <div class="case-study">
+    <div class="case-label">案例研究</div>
+    <h4>连锁超市的采购系统</h4>
+    <div class="case-meta">零售 | 采购 | 中型企业</div>
+    <p>一家有约 24 家门店的区域连锁超市，利润率约为行业基准的一半，对供应商几乎没有议价能力。</p>
+    <p><strong>挑战：</strong>易腐品浪费、缺货损失客户、人工采购员凭直觉决策，无法跨 25 家门店优化数千个 SKU。</p>
+    <p><strong>解决方案：</strong>部署了一个完全取代人类采购职能的 AI 系统。它不辅助人类或生成建议供审查——它自主做出采购决策。三组件架构：跨系统数据平台、SKU 级需求预测模型、自主采购代理。</p>
+    <table>
+      <tr><th>指标</th><th>结果</th></tr>
+      <tr><td>浪费减少</td><td class="tnum">40%</td></tr>
+      <tr><td>缺货减少</td><td class="tnum">80%</td></tr>
+      <tr><td>EBITDA 利润率</td><td>翻倍</td></tr>
+    </table>
+    <blockquote>"市场领导者有更高的利润率。这些家伙超级小。但他们做得几乎一样好，而他们的采购能力与大型玩家相比几乎为零。但他们有的是没有浪费。"<span class="attr">—— 零售公司项目负责人</span></blockquote>
+  </div>
+</section>
+
+<!-- CHAPTER 9 -->
+<section>
+  <div class="chapter-num">第九章</div>
+  <div class="chapter-title">企业数据到底需要多干净？</div>
+  <div class="chapter-sub">为什么真正的数据挑战是访问和存储，而非清洁度</div>
+
+  <div class="finding">
+    <div class="finding-label">发现 1</div>
+    <h3>LLM 不仅在消费数据——它们在修复数据</h3>
+    <p>传统叙事假设 AI 需要干净数据才能工作。我们的数据讲述了一个不同的故事：<strong>仅 6%</strong> 的实施拥有完全为 AI 部署准备就绪的数据。绝大多数面临从中学到严重的数据挑战。然而在大多数案例中，LLM 是数据问题解决方案的一部分——它们修复了本应难以应对的数据问题。在 <strong>91%</strong> 的实施中成功处理了非结构化数据（语音转录、扫描文档、图像、聊天日志、遗留代码），在 <strong>88%</strong> 的案例中解锁了此前无法访问的数据。</p>
+    <blockquote>"合作伙伴告诉我们，嘿，清理这些数据本来需要两个月，而你们在一天内就标记了所有数据问题。"<span class="attr">—— 专业服务公司 AI VP</span></blockquote>
+  </div>
+
+  <div class="finding">
+    <div class="finding-label">发现 2</div>
+    <h3>流程文档化和数据访问比数据完美更重要</h3>
+    <p>59% 的实施数据分散在多个系统中。仅 16% 拥有完全集中的数据。成功不需要集中化——需要的是访问。构建集成层的组织表现得和拥有集中数据存储的组织一样好。</p>
+    <blockquote>"所有的困难工作都在流程文档化和数据架构上。如果你能做好这两件事，其他一切都相当简单。"<span class="attr">—— 专业服务公司 AI VP</span></blockquote>
+  </div>
+
+  <div class="finding">
+    <div class="finding-label">发现 3</div>
+    <h3>专有数据是持久的竞争优势</h3>
+    <p>每个前沿实验室都在训练它可访问的每一份公共数据。组织无法在这个轴线上竞争。但每家公司都有前沿实验室从未见过或被允许看到的专有数据。这数据就是他们的优势。在 75% 的实施中提及专有数据是其 AI 战略的关键因素，47% 明确将其积累的数据描述为竞争护城河。</p>
+    <blockquote>"我们的差异化因素，人们向我们购买的原因，是因为在过去 13 年中我们创建了这个知识图谱。我们拥有超过 200 亿个数据点。"<span class="attr">—— HR 科技公司高管</span></blockquote>
+    <p><strong>启示简单明了：保存一切。</strong>存储数据的成本与在合适用例到来时没有数据的成本相比微不足道。</p>
+  </div>
+
+  <div class="case-study">
+    <div class="case-label">案例研究</div>
+    <h4>建筑服务公司的采购系统</h4>
+    <div class="case-meta">建筑服务 | 采购 | 大型企业</div>
+    <p>一家大型建筑服务公司，现场技术人员需要将零件送到工地。请求通过纸质表格、邮件和 Excel 电子表格提交——两边数据质量都有问题。</p>
+    <p><strong>如何克服：</strong>四阶段管道逐步改进数据——用 Python 提取、用生成式 AI 清理、模糊匹配到目录、人机协作处理例外。从"这是你的需求，这是系统会做的"转向"足够好是什么样子？"</p>
+    <table>
+      <tr><th>指标</th><th>结果</th></tr>
+      <tr><td>投资</td><td>$500K - $1M</td></tr>
+      <tr><td>生产力提升（预计 3-5 年）</td><td class="tnum">30%</td></tr>
+      <tr><td>预期 ROI</td><td>3 年内 10 倍</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- CHAPTER 10 -->
+<section class="alt">
+  <div class="chapter-num">第十章</div>
+  <div class="chapter-title">严格的安全性是保护项目还是杀死它？</div>
+  <div class="chapter-sub">安全要求如何影响 AI 项目结果</div>
+
+  <div class="finding">
+    <div class="finding-label">发现 1</div>
+    <h3>最初构成障碍的安全要求最终会成为赋能因素</h3>
+    <p>在有完整数据的 12 个案例中，安全从未是一个纯粹的项目杀手。在每个安全构成障碍的案例中，同样的要求最终使项目能够处理否则将不可触碰的敏感数据。模式是一致的：被迫建立强大数据保护基础设施的团队解锁了没有此类基础设施的竞争对手无法触及的用例。</p>
+  </div>
+
+  <div class="finding">
+    <div class="finding-label">发现 2</div>
+    <h3>当正式渠道跟不上时，Shadow AI 就会出现</h3>
+    <p>Shadow AI 指员工未经 IT 或安全团队正式授权使用 AI 工具。行业调查发现 70-80% 在工作中使用 AI 的员工依赖未经雇主批准的工具。在我们的案例中，Shadow AI 在 15% 的案例中被明确提及，呈现出两种模式：<strong>热情超前于治理</strong>（一家半导体公司发现有 1,500-1,600 种不同的 AI 工具在全公司使用），<strong>绝望击败官僚</strong>（医生未经正式批准就采用了环境转录工具，因为医院系统过于缓慢）。</p>
+    <p>洞察不是 Shadow AI 好或坏，而是 Shadow AI 是政策比技术慢的症状。</p>
+  </div>
+
+  <div class="finding">
+    <div class="finding-label">发现 3</div>
+    <h3>安全税是真实的，但投资有回报</h3>
+    <p>在受监管行业中，安全延迟可能是巨大的——银行项目需要数年才能建立起来。但税是前置的。一旦基础设施到位，后续项目可以复用它。</p>
+  </div>
+
+  <div class="case-study">
+    <div class="case-label">案例研究</div>
+    <h4>大型零售银行的客户 AI</h4>
+    <div class="case-meta">金融服务 | 客户支持 | 大型企业</div>
+    <p>一家服务数百万客户的大型美国零售银行，在过去的合规问题后受到同意令约束，形成了深度风险厌恶文化。他们想部署 AI 虚拟助手到移动应用，但技术政策禁止使用任何防火墙外的软件或硬件。</p>
+    <p><strong>解决方案：</strong>四组件数据保护架构——PII 擦除（客户话语在离开防火墙前剥离姓名、账号等）、合成数据替换（外部处理期间使用假值）、外部意图处理（云模型确定客户意图并选择工作流）、返回时重组（内部重新插入真值）。</p>
+    <blockquote>"我们发送到 Google Cloud 平台的是所需内容的最小擦除集。我们替换假名字、假金额。它仍然可以辨别意图。然后在返回时我们将所有这些重新组装到响应中。"<span class="attr">—— 大型金融机构高管</span></blockquote>
+    <p><strong>关键教训：</strong>安全是基础设施，不是开销。多年的安全工作为大规模处理敏感金融数据奠定了基础。风险厌恶文化是最难的障碍——技术解决方案并不是完全直接的，但实现文化灵活性确实给了它更快的上市时间优势。</p>
+  </div>
+</section>
+
+<!-- CHAPTER 11 -->
+<section>
+  <div class="chapter-num">第十一章</div>
+  <div class="chapter-title">基础模型选择何时不是商品？</div>
+  <div class="chapter-sub">模型选择何时重要、何时不重要，以及什么驱动了开源 vs 闭源的决策</div>
+
+  <div class="finding">
+    <div class="finding-label">发现 1</div>
+    <h3>对于大多数企业用例，模型选择是商品</h3>
+    <table>
+      <tr><th>判定</th><th>占比</th></tr>
+      <tr><td>商品化（可互换）</td><td class="tnum">42%</td></tr>
+      <tr><td>中等重要</td><td class="tnum">39%</td></tr>
+      <tr><td>关键差异化因素</td><td class="tnum">19%</td></tr>
+    </table>
+  </div>
+
+  <div class="finding">
+    <div class="finding-label">发现 2</div>
+    <h3>商品化边界由任务复杂度定义</h3>
+    <p>在常规任务（客户支持分类、文档搜索、营销内容、招聘筛选）中，71% 将模型视为完全可互换，没有一个视为关键差异化因素。在高级任务（复杂编码、合规分析、临床文档、agentic 工作流）中，仅 18% 视为商品，35% 视为关键。</p>
+  </div>
+
+  <div class="finding">
+    <div class="finding-label">发现 3</div>
+    <h3>多模型策略正在成为新常态</h3>
+    <p>大多数实施使用多个模型而非承诺单一提供商。形式包括：任务特定路由（快速便宜的模型做分类，更强的模型做生成）、冗余验证（同一查询运行两个不同模型，只接受匹配答案）、基于查询的优化（按成本/准确率/相关性/延迟路由）。</p>
+  </div>
+
+  <div class="finding">
+    <div class="finding-label">发现 4</div>
+    <h3>模型抽象层正在成为竞争优势</h3>
+    <p>最复杂的实施包含允许在不重新架构系统的情况下切换模型的抽象层。一家外卖公司构建了跨 OpenAI、Gemini 和 Claude 的多模型 AI 聊天平台，实现了 90-95% 的客服自动化而无单一提供商依赖。持久优势在编排层，而非基础模型。</p>
+  </div>
+
+  <div class="finding">
+    <div class="finding-label">发现 5</div>
+    <h3>开源模型正在进入生产——但以专门角色</h3>
+    <p>开源并不缺席企业部署，而是出现在特定功能中：专业化任务如命名实体识别、需要完全模型可见性的安全功能、基于领域数据微调的初创产品。中国开源模型在 2026 年初的崛起（Qwen、Kimi、Minimax、GLM 等）已经缩小了与专有模型的能力差距，同时保持了显著的成本优势。在 OpenRouter 上，按 token 量排名的前 5 名中有 4 个是中国开源模型。</p>
+  </div>
+
+  <div class="finding">
+    <div class="finding-label">发现 6</div>
+    <h3>当前焦点是能力和速度，而非成本</h3>
+    <p>超过三分之二的讨论模型选择标准的企业将能力作为选择的主要原因——他们选择能最快交付结果的模型，而非成本最低的模型。企业在今天并没有优化推理成本，而是优化价值实现时间、运营简单性和风险降低。但随着 token 高消耗的 agent 实施兴起，推理成本将可能成为模型选择的首要因素。</p>
+  </div>
+
+  <div class="case-study">
+    <div class="case-label">案例研究</div>
+    <h4>科技公司的客户支持——模型无关基础设施</h4>
+    <div class="case-meta">通信技术 | 客户支持 | 大型企业</div>
+    <p>客服量增长快于招聘代理的速度。技术挑战不是构建聊天机器人，而是构建能按成本/准确率/延迟优化路由查询、避免供应商依赖的基础设施。</p>
+    <p><strong>解决方案：</strong>构建了一个多 LLM 网关，从应用层抽象掉模型选择。针对四个维度优化路由：成本、延迟、相关性、准确率。</p>
+    <blockquote>"我们不只用一种。我们用 Claude、OpenAI、一些 Llama。我们也用 Bedrock。"<span class="attr">—— 科技公司运营主管</span></blockquote>
+    <table>
+      <tr><th>指标</th><th>结果</th></tr>
+      <tr><td>工单转移</td><td class="tnum">82%</td></tr>
+      <tr><td>解决率</td><td class="tnum">71%</td></tr>
+      <tr><td>代理生产力</td><td>提升 40%+</td></tr>
+      <tr><td>支持人力</td><td>减少 32%</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- CONCLUSION -->
+<section class="alt">
+  <div class="chapter-num">结论</div>
+  <div class="chapter-title">从数据中浮现出的实战手册</div>
+
+  <p>这项研究始于一个看似简单的问题：当企业在生产中部署 AI 时，实际发生了什么？在研究了 51 例成功实施之后，答案比主流叙事更微妙也更具可操作性。技术是有效的。挑战是其他一切。</p>
+
+  <h3>从数据中浮现出的手册</h3>
+  
+  <p><strong>从看不见的无形工作开始。</strong>流程文档化、数据访问层和变革管理不是附加在实际工作之上的开销——它们往往就是实际工作。将这些视为前提条件而非事后想法的组织更快到达生产阶段并实现更高回报。</p>
+  
+  <p><strong>投资于度量。</strong>在部署前识别清晰的 KPI。具有强指标的组织显著更有可能展示价值并扩大项目规模。关键指标应超越人力缩减或成本节约，涵盖质量、客户价值和收入增长。</p>
+  
+  <p><strong>保存一切。</strong>即使是混乱、不完整或看似无用的数据，现在 LLM 可以从非结构化来源中清理、结构化和提取意义，它就有了价值。那些囤积数据（即使是不完美的数据）的组织，一旦模型赶上，就拥有了复利优势。</p>
+  
+  <p><strong>从第一天起构建多模型架构。</strong>最成功的实施将模型视为其控制的编排层中的可互换组件。将每个任务路由到最优模型：小模型做分类、大模型做推理规划、开源做专门功能、专有做行业特定能力。</p>
+  
+  <p><strong>为 agentic AI 做准备。</strong>Agentic 与非 agentic 实施之间的生产力差距——71% vs 40% 中位提升——只会随着模型改进而扩大。现在构建自主工作流基础设施的组织将处于捕获下一波价值的位置。</p>
+
+  <h3>更广阔的图景</h3>
+  <p>生产力 J 曲线正是我们的数据所捕获的：在回报实现之前进行大量的前期集成、流程再造和变革管理投资。在公司层面，竞争动态是可见的——虽然每个人都能访问相同的模型，但领导者与落后者之间的差距正在扩大。我们今天样本中 20% 的 agentic 实施，很可能在三年内代表大多数。</p>
+  <p>我们正处于一个"生产力分叉"——宏观经济结果取决于组织是用 AI 创造新任务和增强工人，还是主要削减成本和减少人力。我们的数据显示两条路径同时成功推进，但平衡如何随着技术成熟而转移仍不清楚。组织如何导航这个分叉将塑造这项变革性技术是带来广泛共享的繁荣，还是集中的收益和社会不稳定。</p>
+  <p>许多发达经济体中，政府用于再培训或支持失业工人的计划和政策可能越来越必要。即使我们对 AI 在经济中创造巨大价值的潜力高度乐观，转型也不会一帆风顺。实验的窗口正在关闭。问题不再是 AI 是否会交付价值，而是组织是否能进化得足够快来捕获它——以及组织在社会责任方面应承担什么来帮助减轻转型对工人和社区的冲击。经济的稳定性和我们社会结构的韧性，可能取决于今天的领导者如何回答这个问题。</p>
+</section>
+
+<!-- APPENDIX -->
+<section>
+  <h2>附录</h2>
+
+  <h3>各职能关键绩效指标 (KPI)</h3>
+  <p>在部署前定义清晰 KPI 的组织显著更有可能展示价值并获得持续投资。以下每种 KPI 和每种失败模式均由我们样本中的至少一个实施报告。</p>
+
+  <table>
+    <tr><th>职能</th><th>KPI</th><th>衡量内容</th></tr>
+    <tr><td rowspan="5">客户支持</td><td>工单/呼叫转移率</td><td>AI 无需人工代理介入解决的咨询占比</td></tr>
+    <tr><td>平均处理时间 (AHT)</td><td>解决客户交互的总时间</td></tr>
+    <tr><td>自助解决率</td><td>AI 转移的交互中实际被解决的比例</td></tr>
+    <tr><td>客户满意度 (CSAT)</td><td>客户报告的满意度</td></tr>
+    <tr><td>支持人力缩减</td><td>AI 自动化实现的支持人员减少</td></tr>
+    <tr><td rowspan="4">销售</td><td>销售代表时间节省</td><td>销售代表每日释放的时间</td></tr>
+    <tr><td>线索发现速度</td><td>识别和研究潜在客户的时间</td></tr>
+    <tr><td>转化率</td><td>潜在客户转为付费客户的比率</td></tr>
+    <tr><td>工具采用率</td><td>销售团队活跃使用 AI 工具的比例</td></tr>
+    <tr><td rowspan="5">工程</td><td>开发时间缩减</td><td>完成开发任务的工时缩减</td></tr>
+    <tr><td>任务完成速度</td><td>完成个别编码或迁移子任务的时间</td></tr>
+    <tr><td>团队规模 vs 产出</td><td>工程团队规模相对于交付产出的变化</td></tr>
+    <tr><td>代码质量评分</td><td>AI 生成代码的成功率和准确率</td></tr>
+    <tr><td>新产品供应</td><td>从 AI 实施中涌现的新的或计划外的产品</td></tr>
+    <tr><td rowspan="4">营销</td><td>活动上市时间</td><td>从简报至活动启动的时间</td></tr>
+    <tr><td>内容生产成本</td><td>创建营销内容和活动材料的成本</td></tr>
+    <tr><td>点击/转化率</td><td>AI 生成内容驱动的客户参与和购买行为</td></tr>
+    <tr><td>个性化规模</td><td>创建个体化活动 vs 批量分段的能力</td></tr>
+    <tr><td rowspan="3">法务与合规</td><td>文档审查/起草时间</td><td>审查、起草或处理法律文件的时间</td></tr>
+    <tr><td>文档处理量</td><td>给定时期内处理和搜索的文档数量</td></tr>
+    <tr><td>信息检索准确率</td><td>从法律文件中提取信息的准确率</td></tr>
+    <tr><td rowspan="3">采购</td><td>浪费/缺货减少</td><td>通过需求优化减少库存浪费和缺货事件</td></tr>
+    <tr><td>销货成本缩减</td><td>通过更好的谈判、供应商匹配和时机节省</td></tr>
+    <tr><td>处理时间缩减</td><td>从接收到采购订单的时间</td></tr>
+    <tr><td rowspan="3">财务运营</td><td>处理准确率</td><td>AI 系统正确处理的发票或交易百分比</td></tr>
+    <tr><td>人员缩减/成本节约</td><td>自动化财务处理带来的人力和成本节约</td></tr>
+    <tr><td>积压消除速度</td><td>处理交易和消除积压的时间</td></tr>
+    <tr><td rowspan="3">HR 与招聘</td><td>每个职位的筛选时间</td><td>筛选给定职位全部候选人的时间</td></tr>
+    <tr><td>端到端招聘效率</td><td>整个招聘管道的总体生产力提升</td></tr>
+    <tr><td>候选人转化率</td><td>筛选候选人转为成功入职的比率</td></tr>
+    <tr><td rowspan="3">IT 运维</td><td>运营成本缩减</td><td>自动化 IT 支持和内部运营的成本节约</td></tr>
+    <tr><td>人员/系统比</td><td>管理 AI 自动化系统或机器人所需的人数</td></tr>
+    <tr><td>技术人员自给度</td><td>现场人员不需升级即可解决问题的能力</td></tr>
+    <tr><td rowspan="2">现场服务</td><td>数据收集时间</td><td>收集客户问题分类所需全部技术数据的时间</td></tr>
+    <tr><td>SLA 达成率</td><td>在约定 SLA 时间内解决的客户问题百分比</td></tr>
+    <tr><td rowspan="3">医疗</td><td>临床文档时间</td><td>临床医生花在文档上 vs 患者护理上的时间</td></tr>
+    <tr><td>收入周期时间</td><td>从服务交付到收到付款的时间</td></tr>
+    <tr><td>编码准确率</td><td>AI 建议的计费编码与医生批准编码的一致性</td></tr>
+    <tr><td>保险运营</td><td>理赔处理效率</td><td>理赔处理人员重复性任务时间的缩减</td></tr>
+  </table>
+
+  <hr class="section-divider full">
+
+  <h3>常见失败模式及其克服方式</h3>
+  <p>在我们访谈中，61% 的 AI 实施在达到生产价值前经历了至少一次重大失败。以下是六种根本原因的整合：</p>
+
+  <table>
+    <tr><th>根本原因</th><th>案例占比</th><th>表现</th><th>如何克服</th></tr>
+    <tr>
+      <td>组织未准备好采用</td>
+      <td class="tnum">35%</td>
+      <td>试点停滞无法规模化；低使用率；缺乏内部倡导者</td>
+      <td>确保与 OKR 挂钩的可见 CEO 授权；框定 AI 为消除重复任务而非替代人；赋能初级大使绕过抗拒的中层管理</td>
+    </tr>
+    <tr>
+      <td>关键知识从未被捕获或存储</td>
+      <td class="tnum">27%</td>
+      <td>模型给出通用或不正确答案；输出质量低于经验丰富的员工</td>
+      <td>在任何 AI 项目前构建可访问的数据架构；将知识文档化作为前提条件；用 AI 本身提取和结构化员工的隐性知识</td>
+    </tr>
+    <tr>
+      <td>法务或合规团队阻碍</td>
+      <td class="tnum">18%</td>
+      <td>项目延迟数月等待批准；用例被限制在低价值安全区域</td>
+      <td>早期将法务作为合作伙伴参与；从第一天实施 PII 擦除、编辑和审计追踪</td>
+    </tr>
+    <tr>
+      <td>技术不够成熟或崩溃</td>
+      <td class="tnum">16%</td>
+      <td>系统在生产规模下失败；昂贵的返工周期</td>
+      <td>构建吸收快速技术演进的模块化框架；使用混合方法：80% 技术 + 20% 人类精炼</td>
+    </tr>
+    <tr>
+      <td>错误的问题或不切实际的期望</td>
+      <td class="tnum">14%</td>
+      <td>解决方案寻找问题；领导层过早终止项目</td>
+      <td>首先端到端映射流程并找到真正的瓶颈；与终端用户（而非仅高管）验证用例；将成功框定为迭代改进</td>
+    </tr>
+    <tr>
+      <td>人才或赞助缺口</td>
+      <td class="tnum">12%</td>
+      <td>迭代缓慢、供应商依赖；倡导者离开时项目失优先级</td>
+      <td>创建专门的数据科学角色；跨多个领导层确保赞助；持续记录胜利以维持组织承诺</td>
+    </tr>
+  </table>
+</section>
+
+<!-- END NOTES -->
+<section class="alt">
+  <h2>尾注</h2>
+  <div style="font-size:14px; line-height:1.8; color:var(--ink-muted)">
+    <p>[1] Erik Brynjolfsson, Daniel Rock, and Chad Syverson, "The Productivity J-Curve: How Intangibles Complement General Purpose Technologies," <em>American Economic Journal: Macroeconomics</em> 13, no. 1 (2021): 333–372.</p>
+    <p>[2] Erik Brynjolfsson and Gabriel Unger, "The Macroeconomics of Artificial Intelligence," <em>IMF Finance & Development</em>, December 2023.</p>
+    <p>[3] Daron Acemoglu and Pascual Restrepo, "Automation and New Tasks: How Technology Displaces and Reinstates Labor," <em>Journal of Economic Perspectives</em> 33, no. 2 (2019): 3–30.</p>
+    <p>[4] Daron Acemoglu, "The Simple Macroeconomics of AI," NBER Working Paper 32487, April 2024.</p>
+    <p>[5] Erik Brynjolfsson, Bharat Chandar, and Ruyu Chen, "Canaries in the Coal Mine? Six Facts about the Recent Employment Effects of AI," Stanford Digital Economy Lab Working Paper, 2025.</p>
+    <p>[6] Erik Brynjolfsson et al., "GDP-B: Accounting for the Value of New and Free Goods," <em>American Economic Journal: Macroeconomics</em> 17, no. 4 (2025): 312–344.</p>
+    <p>[7] MIT NANDA Initiative, "The GenAI Divide: State of AI in Business 2025," July 2025.</p>
+    <p>[8] McKinsey & Company, "The State of AI in Early 2024," May 2024.</p>
+    <p>[9] Accenture, "AI: Built to Scale – From Experimental to Exponential," 2019.</p>
+    <p>[10] Anthropic, "The Anthropic Economic Index," multiple reports, 2025–2026.</p>
+    <p>[11] McKinsey & Company, "The State of AI in 2025: Agents, Innovation, and Transformation," November 2025.</p>
+    <p>[12] OpenAI, "The State of Enterprise AI," December 2025.</p>
+    <p>[13] ISACA, "The Rise of Shadow AI," September 2025; IBM, "2025 Cost of Data Breach Report."</p>
+    <p>[14] WalkMe / SAP, "AI in the Workplace Survey," August 2025.</p>
+    <p>[15] IBM / Censuswide, "Is Rising AI Adoption Creating Shadow AI Risks?" November 2025.</p>
+    <p>[16] TELUS Digital / Fuel iX, "Shadow AI in the Enterprise," February 2025.</p>
+    <p>[17] Frank Nagle and Daniel Yue, "The Latent Role of Open Models in the AI Economy," MIT, November 2025.</p>
+    <p>[18] McKinsey, Mozilla, and McGovern Foundation, "Open-source in the Age of AI," February 2025.</p>
+    <p>[19] OpenRouter and Andreessen Horowitz, "State of AI," December 2025.</p>
+    <p>[20] Artificial Analysis, "Intelligence Index v4.0," January 2026.</p>
+    <p>[21] Deloitte AI Institute, "The State of AI in the Enterprise," January 2026.</p>
+    <p>[22] METR, "Measuring AI Ability to Complete Long Tasks," updated February 2026.</p>
+    <p>[23] "Labor Market Impacts of AI: A New Measure and Early Evidence," Anthropic, March 2026.</p>
+  </div>
+</section>
+
+<!-- ACKNOWLEDGEMENTS -->
+<section>
+  <h2>致谢</h2>
+  <p>特别感谢所有贡献了时间、洞察和数据的受访者。我们还要衷心感谢帮助完善内容的审阅者：Sandy Pentland, Andy Haupt, Jing Wang, Christie Ko, Tomas Castagnino, and Matty Smith。</p>
+</section>
+
+<!-- FOOTER -->
+<section style="text-align:center; padding: 60px">
+  <hr class="section-divider">
+  <p class="muted" style="font-size:14px">Stanford Digital Economy Lab · Stanford University · April 2026</p>
+  <p class="muted" style="font-size:13px; margin-top:8px">原文地址：<a href="https://digitaleconomy.stanford.edu/publication/enterprise-ai-playbook/" style="color:var(--accent)">digitaleconomy.stanford.edu</a></p>
+  <p class="muted" style="font-size:12px; margin-top:16px">中文翻译版本 · 仅供参考学习</p>
+</section>
+
+</body>
+</html>

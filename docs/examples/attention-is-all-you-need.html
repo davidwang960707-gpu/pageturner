@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attention Is All You Need 中文快读版</title>
+<style>
+  :root {
+    --ink: #1d1d1f;
+    --muted: #65676d;
+    --bg: #ffffff;
+    --alt: #f5f5f7;
+    --accent: #5e5ce6;
+    --teal: #0b7f75;
+    --gold: #b7791f;
+    --red: #b42318;
+    --line: rgba(29, 29, 31, .12);
+    --soft-violet: rgba(94, 92, 230, .08);
+    --soft-teal: rgba(11, 127, 117, .08);
+    --soft-gold: rgba(183, 121, 31, .10);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font: 18px/1.72 -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", "Noto Sans SC", sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .progress {
+    position: fixed;
+    inset: 0 auto auto 0;
+    height: 2px;
+    width: 0;
+    background: linear-gradient(90deg, var(--accent), var(--teal));
+    z-index: 20;
+  }
+  .page-num {
+    position: fixed;
+    right: 22px;
+    bottom: 22px;
+    z-index: 20;
+    padding: 5px 11px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, .86);
+    backdrop-filter: blur(12px);
+    color: var(--muted);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+  .cover, .stats-dashboard, section {
+    padding: 78px max(28px, calc((100% - 980px) / 2));
+  }
+  .cover {
+    min-height: 94vh;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: 52px;
+    align-items: center;
+    background: linear-gradient(180deg, #f7f7fb 0%, #fff 100%);
+    border-top: 4px solid var(--accent);
+  }
+  .eyebrow, .kicker, .figure-label {
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 760;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+  }
+  h1 {
+    margin: 22px 0 20px;
+    font-size: 72px;
+    line-height: 1.04;
+    letter-spacing: 0;
+  }
+  .subtitle {
+    max-width: 650px;
+    margin: 0 0 44px;
+    color: var(--muted);
+    font-size: 24px;
+    line-height: 1.55;
+  }
+  .meta {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.8;
+  }
+  .meta strong { color: var(--ink); }
+  .cover-figure {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+    padding: 18px;
+    box-shadow: 0 22px 60px rgba(20, 22, 28, .10);
+  }
+  .mini-stack {
+    display: grid;
+    gap: 10px;
+  }
+  .mini-row {
+    display: grid;
+    grid-template-columns: 1fr 34px 1fr;
+    gap: 8px;
+    align-items: center;
+  }
+  .mini-cell {
+    min-height: 42px;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--alt);
+    font-size: 12px;
+    font-weight: 680;
+    text-align: center;
+  }
+  .mini-cell.accent { background: var(--soft-violet); border-color: rgba(94,92,230,.22); color: var(--accent); }
+  .mini-arrow { text-align: center; color: var(--muted); font-size: 18px; }
+  .stats-dashboard {
+    background: var(--alt);
+    text-align: center;
+  }
+  .dash-label { margin-bottom: 30px; }
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 18px;
+  }
+  .stat-cell {
+    border-top: 1px solid var(--line);
+    padding-top: 18px;
+    text-align: left;
+  }
+  .stat-cell .num {
+    font-size: 42px;
+    line-height: 1;
+    font-weight: 760;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-cell .label {
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+  section:nth-of-type(even) { background: var(--alt); }
+  h2 {
+    margin: 8px 0 16px;
+    font-size: 36px;
+    line-height: 1.2;
+    letter-spacing: 0;
+  }
+  h3 {
+    margin: 34px 0 10px;
+    font-size: 23px;
+    line-height: 1.3;
+  }
+  p { max-width: 790px; margin: 0 0 16px; }
+  .lead { color: var(--muted); font-size: 19px; }
+  .finding {
+    margin: 28px 0;
+    padding: 18px 0 18px 22px;
+    border-left: 3px solid var(--accent);
+  }
+  .finding b { display: block; margin-bottom: 6px; }
+  blockquote {
+    max-width: 820px;
+    margin: 28px 0;
+    padding: 20px 24px;
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    background: #fafafa;
+    color: var(--muted);
+  }
+  .figure {
+    margin: 32px 0;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+    padding: 24px;
+  }
+  .figure-label { margin-bottom: 18px; }
+  .architecture {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px;
+  }
+  .lane {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 18px;
+    background: var(--alt);
+  }
+  .lane-title {
+    font-weight: 760;
+    margin-bottom: 14px;
+  }
+  .module {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: center;
+    min-height: 48px;
+    margin-top: 10px;
+    padding: 11px 13px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+    font-size: 14px;
+  }
+  .module strong { font-size: 14px; }
+  .module span { color: var(--muted); font-size: 12px; }
+  .module.accent { background: var(--soft-violet); border-color: rgba(94,92,230,.22); }
+  .formula {
+    margin-top: 18px;
+    padding: 16px;
+    border-radius: 8px;
+    background: #111215;
+    color: #f5f5f7;
+    font-size: 15px;
+    overflow-x: auto;
+  }
+  .bars {
+    display: grid;
+    gap: 15px;
+    margin-top: 20px;
+  }
+  .bar-row {
+    display: grid;
+    grid-template-columns: 150px 1fr 70px;
+    gap: 14px;
+    align-items: center;
+    font-size: 14px;
+  }
+  .bar-track {
+    height: 12px;
+    background: var(--alt);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    width: var(--w);
+    height: 100%;
+    background: var(--accent);
+  }
+  .bar-fill.teal { background: var(--teal); }
+  .bar-fill.gold { background: var(--gold); }
+  .bar-value { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .heatmap {
+    display: grid;
+    grid-template-columns: repeat(8, minmax(22px, 1fr));
+    gap: 6px;
+    max-width: 520px;
+    margin-top: 18px;
+  }
+  .heat {
+    aspect-ratio: 1;
+    border-radius: 6px;
+    background: rgba(94, 92, 230, var(--a));
+    border: 1px solid rgba(94, 92, 230, .16);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 26px 0;
+    font-size: 15px;
+  }
+  th, td {
+    padding: 12px 13px;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    color: var(--muted);
+    font-size: 12px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+  .timeline {
+    display: grid;
+    gap: 14px;
+    margin-top: 24px;
+  }
+  .time-row {
+    display: grid;
+    grid-template-columns: 86px 1fr;
+    gap: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  .time-row b { font-variant-numeric: tabular-nums; color: var(--accent); }
+  .note-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 22px;
+  }
+  .note {
+    border-top: 1px solid var(--line);
+    padding-top: 16px;
+  }
+  .note strong { display: block; margin-bottom: 6px; }
+  .note span { color: var(--muted); font-size: 14px; }
+  .source {
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 14px;
+  }
+  @media (max-width: 900px) {
+    body { font-size: 17px; }
+    .page-num { display: none; }
+    .cover, .stats-dashboard, section { padding: 52px 22px; }
+    .cover { min-height: auto; grid-template-columns: 1fr; gap: 28px; }
+    h1 { font-size: 46px; }
+    .subtitle { font-size: 20px; margin-bottom: 28px; }
+    .stat-grid, .architecture, .note-grid { grid-template-columns: 1fr; }
+    .bar-row { grid-template-columns: 1fr; gap: 7px; }
+  }
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="page-num" id="pageNum">1 / 10</div>
+
+<main>
+  <div class="cover page">
+    <div>
+      <div class="eyebrow">PageTurner Example · AI 大模型论文</div>
+      <h1>Attention Is All You Need</h1>
+      <p class="subtitle">Transformer 论文中文快读版：从 Q/K/V 注意力、编码器-解码器栈，到为什么它成为现代大模型的底层接口。</p>
+      <div class="meta"><strong>Vaswani et al.</strong> · NeurIPS 2017 · arXiv:1706.03762 · 示例输出：结构化中文 HTML</div>
+    </div>
+    <div class="cover-figure" aria-label="Transformer 结构缩略图">
+      <div class="figure-label">Architecture Snapshot</div>
+      <div class="mini-stack">
+        <div class="mini-row"><div class="mini-cell">输入嵌入</div><div class="mini-arrow">→</div><div class="mini-cell accent">位置编码</div></div>
+        <div class="mini-row"><div class="mini-cell accent">Encoder × 6</div><div class="mini-arrow">↔</div><div class="mini-cell accent">Decoder × 6</div></div>
+        <div class="mini-row"><div class="mini-cell">Multi-Head Attention</div><div class="mini-arrow">+</div><div class="mini-cell">Feed Forward</div></div>
+        <div class="mini-row"><div class="mini-cell">残差连接</div><div class="mini-arrow">+</div><div class="mini-cell">LayerNorm</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-dashboard page">
+    <div class="kicker dash-label">数据速览</div>
+    <div class="stat-grid">
+      <div class="stat-cell"><div class="num">2017</div><div class="label">论文发布年份</div></div>
+      <div class="stat-cell"><div class="num">8</div><div class="label">base model 多头注意力头数</div></div>
+      <div class="stat-cell"><div class="num">6+6</div><div class="label">编码器层 + 解码器层</div></div>
+      <div class="stat-cell"><div class="num">512</div><div class="label">base model 的 d_model</div></div>
+      <div class="stat-cell"><div class="num">1</div><div class="label">self-attention 最大路径长度</div></div>
+      <div class="stat-cell"><div class="num">28.4</div><div class="label">WMT14 En-De BLEU，大模型结果</div></div>
+    </div>
+  </div>
+
+  <section class="page">
+    <div class="kicker">一页读懂</div>
+    <h2>它真正换掉的不是 RNN，而是“顺序处理”的思维。</h2>
+    <p class="lead">Transformer 把序列建模拆成两件事：用 attention 让 token 直接互相看见，用 position encoding 告诉模型顺序在哪里。这样训练可以并行，长距离依赖不再被一步步传递稀释。</p>
+    <div class="finding"><b>核心结论</b>只靠 attention 加前馈网络，就能在机器翻译任务上达到当时领先结果，并显著改善训练并行性。</div>
+    <blockquote>快读判断：读 GPT、BERT、T5、Llama、MoE、长上下文优化之前，这篇是地基。它回答“为什么现代大模型可以堆得这么大”。</blockquote>
+  </section>
+
+  <section class="page">
+    <div class="kicker">结构图解</div>
+    <h2>Encoder 负责读懂上下文，Decoder 负责边看边生成。</h2>
+    <p>PageTurner 在论文页里会把结构性内容抽出来做成图解，而不是只翻译段落。下面这张图保留原论文的模块关系，但用中文阅读顺序重排。</p>
+    <div class="figure">
+      <div class="figure-label">Transformer Stack</div>
+      <div class="architecture">
+        <div class="lane">
+          <div class="lane-title">Encoder Layer × 6</div>
+          <div class="module accent"><strong>Multi-Head Self-Attention</strong><span>每个 token 看全句</span></div>
+          <div class="module"><strong>Add & Norm</strong><span>残差稳定训练</span></div>
+          <div class="module"><strong>Position-wise FFN</strong><span>逐位置非线性加工</span></div>
+          <div class="module"><strong>Add & Norm</strong><span>输出记忆表征</span></div>
+        </div>
+        <div class="lane">
+          <div class="lane-title">Decoder Layer × 6</div>
+          <div class="module accent"><strong>Masked Self-Attention</strong><span>不能偷看未来</span></div>
+          <div class="module accent"><strong>Encoder-Decoder Attention</strong><span>对齐源序列</span></div>
+          <div class="module"><strong>Position-wise FFN</strong><span>生成分布前加工</span></div>
+          <div class="module"><strong>Linear + Softmax</strong><span>预测下一个 token</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="page">
+    <div class="kicker">公式翻译</div>
+    <h2>Q/K/V 是把“相关性”拆成可计算的检索问题。</h2>
+    <p>一个 token 先投影出 Query、Key、Value。Query 去和所有 Key 计算相似度，再用这个权重加权 Value。多头注意力则是在多个子空间里并行做这件事。</p>
+    <div class="formula">Attention(Q, K, V) = softmax(QKᵀ / √dₖ) V</div>
+    <div class="figure">
+      <div class="figure-label">Attention Heatmap · 示例可视化</div>
+      <p class="lead">深色格代表当前 token 更关注的位置。示例页会把抽象公式转成可感知的“注意力分布”图，而不是让读者在符号里迷路。</p>
+      <div class="heatmap" aria-label="注意力热力图示意">
+        <div class="heat" style="--a:.90"></div><div class="heat" style="--a:.28"></div><div class="heat" style="--a:.16"></div><div class="heat" style="--a:.10"></div><div class="heat" style="--a:.34"></div><div class="heat" style="--a:.22"></div><div class="heat" style="--a:.18"></div><div class="heat" style="--a:.12"></div>
+        <div class="heat" style="--a:.24"></div><div class="heat" style="--a:.86"></div><div class="heat" style="--a:.30"></div><div class="heat" style="--a:.15"></div><div class="heat" style="--a:.26"></div><div class="heat" style="--a:.34"></div><div class="heat" style="--a:.18"></div><div class="heat" style="--a:.11"></div>
+        <div class="heat" style="--a:.18"></div><div class="heat" style="--a:.28"></div><div class="heat" style="--a:.82"></div><div class="heat" style="--a:.32"></div><div class="heat" style="--a:.18"></div><div class="heat" style="--a:.30"></div><div class="heat" style="--a:.25"></div><div class="heat" style="--a:.12"></div>
+        <div class="heat" style="--a:.12"></div><div class="heat" style="--a:.16"></div><div class="heat" style="--a:.34"></div><div class="heat" style="--a:.78"></div><div class="heat" style="--a:.30"></div><div class="heat" style="--a:.21"></div><div class="heat" style="--a:.18"></div><div class="heat" style="--a:.14"></div>
+        <div class="heat" style="--a:.36"></div><div class="heat" style="--a:.21"></div><div class="heat" style="--a:.18"></div><div class="heat" style="--a:.29"></div><div class="heat" style="--a:.88"></div><div class="heat" style="--a:.38"></div><div class="heat" style="--a:.22"></div><div class="heat" style="--a:.18"></div>
+        <div class="heat" style="--a:.16"></div><div class="heat" style="--a:.33"></div><div class="heat" style="--a:.24"></div><div class="heat" style="--a:.20"></div><div class="heat" style="--a:.34"></div><div class="heat" style="--a:.82"></div><div class="heat" style="--a:.36"></div><div class="heat" style="--a:.20"></div>
+        <div class="heat" style="--a:.12"></div><div class="heat" style="--a:.18"></div><div class="heat" style="--a:.24"></div><div class="heat" style="--a:.18"></div><div class="heat" style="--a:.22"></div><div class="heat" style="--a:.35"></div><div class="heat" style="--a:.78"></div><div class="heat" style="--a:.42"></div>
+        <div class="heat" style="--a:.10"></div><div class="heat" style="--a:.12"></div><div class="heat" style="--a:.14"></div><div class="heat" style="--a:.16"></div><div class="heat" style="--a:.18"></div><div class="heat" style="--a:.26"></div><div class="heat" style="--a:.44"></div><div class="heat" style="--a:.90"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="page">
+    <div class="kicker">数据可视化</div>
+    <h2>三类架构的关键差异：路径长度与顺序依赖。</h2>
+    <p>原论文用复杂度表说明 self-attention、recurrent、convolutional layer 的差异。快读页会把这个表转成图表，先给直觉，再保留原始对照。</p>
+    <div class="figure">
+      <div class="figure-label">Maximum Path Length · 越短越利于长距离依赖</div>
+      <div class="bars">
+        <div class="bar-row"><div>Self-Attention</div><div class="bar-track"><div class="bar-fill teal" style="--w:10%"></div></div><div class="bar-value">O(1)</div></div>
+        <div class="bar-row"><div>Convolution</div><div class="bar-track"><div class="bar-fill gold" style="--w:46%"></div></div><div class="bar-value">O(log n)</div></div>
+        <div class="bar-row"><div>Recurrent</div><div class="bar-track"><div class="bar-fill" style="--w:92%"></div></div><div class="bar-value">O(n)</div></div>
+      </div>
+    </div>
+    <table>
+      <thead><tr><th>Layer Type</th><th>每层复杂度</th><th>顺序操作</th><th>最大路径长度</th></tr></thead>
+      <tbody>
+        <tr><td>Self-Attention</td><td>O(n² · d)</td><td>O(1)</td><td>O(1)</td></tr>
+        <tr><td>Recurrent</td><td>O(n · d²)</td><td>O(n)</td><td>O(n)</td></tr>
+        <tr><td>Convolutional</td><td>O(k · n · d²)</td><td>O(1)</td><td>O(logₖ n)</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="page">
+    <div class="kicker">训练配方</div>
+    <h2>论文真正厉害的地方，也包括一套工程上可复现的训练配方。</h2>
+    <div class="note-grid">
+      <div class="note"><strong>Residual + LayerNorm</strong><span>让深层堆叠稳定，减少信息在层间损失。</span></div>
+      <div class="note"><strong>Label Smoothing</strong><span>缓解过度自信，提升泛化和 BLEU 表现。</span></div>
+      <div class="note"><strong>Warmup Schedule</strong><span>学习率先升后降，配合 Adam 稳住早期训练。</span></div>
+    </div>
+    <table>
+      <thead><tr><th>配置</th><th>Base</th><th>Big</th><th>阅读备注</th></tr></thead>
+      <tbody>
+        <tr><td>d_model</td><td>512</td><td>1024</td><td>隐藏表示维度，决定主干宽度</td></tr>
+        <tr><td>Attention Heads</td><td>8</td><td>16</td><td>多视角关系建模</td></tr>
+        <tr><td>d_ff</td><td>2048</td><td>4096</td><td>前馈网络中间层宽度</td></tr>
+        <tr><td>Dropout</td><td>0.1</td><td>0.3</td><td>控制过拟合，big model 更强正则</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="page">
+    <div class="kicker">读者路线图</div>
+    <h2>从这篇论文到今天的大模型，中间有一条清晰演化线。</h2>
+    <div class="timeline">
+      <div class="time-row"><b>2017</b><span>Transformer 提出，证明 attention-only 架构可行。</span></div>
+      <div class="time-row"><b>2018</b><span>BERT 将 encoder-only 架构用于双向语言理解。</span></div>
+      <div class="time-row"><b>2018+</b><span>GPT 系列强化 decoder-only 自回归生成路线。</span></div>
+      <div class="time-row"><b>2020+</b><span>Scaling laws、稀疏专家、长上下文和高效注意力成为扩展主线。</span></div>
+    </div>
+  </section>
+
+  <section class="page">
+    <div class="kicker">局限与误读</div>
+    <h2>读 Transformer，别只记“Attention 很强”。</h2>
+    <div class="finding"><b>误读 1：attention 可以自动理解一切。</b>它提供的是关系建模机制，能力还来自数据、目标函数、规模、优化和后续工程。</div>
+    <div class="finding"><b>误读 2：位置编码只是小细节。</b>没有位置信息，attention 本身对序列顺序不敏感。后来的 RoPE、ALiBi 等长上下文方法都沿着这个问题继续发展。</div>
+    <div class="finding"><b>误读 3：复杂度只有好处。</b>self-attention 的 O(n²) 代价在长上下文下很重，这也是高效注意力、KV cache 和分块策略持续演进的原因。</div>
+  </section>
+
+  <section class="page source">
+    <div class="kicker">来源与说明</div>
+    <h2>原文链接</h2>
+    <p>论文：<a href="https://arxiv.org/abs/1706.03762">Attention Is All You Need · arXiv:1706.03762</a>。</p>
+    <p>本页是 PageTurner 的示例快读页，用于展示结构解析、中文转写、数据看板与图表化阅读能力；不是官方译本，也不替代逐段学术引用。</p>
+  </section>
+</main>
+
+<script>
+(function () {
+  var pages = Array.prototype.slice.call(document.querySelectorAll('.page'));
+  var progress = document.getElementById('progress');
+  var pageNum = document.getElementById('pageNum');
+  var current = 0;
+  function update(index) {
+    current = Math.max(0, Math.min(pages.length - 1, index));
+    if (progress) progress.style.width = ((current + 1) / pages.length * 100) + '%';
+    if (pageNum) pageNum.textContent = (current + 1) + ' / ' + pages.length;
+  }
+  function go(delta) {
+    update(current + delta);
+    pages[current].scrollIntoView({ behavior: 'smooth' });
+    history.replaceState(null, '', '#p' + current);
+  }
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'ArrowRight' || event.key === 'PageDown') { event.preventDefault(); go(1); }
+    if (event.key === 'ArrowLeft' || event.key === 'PageUp') { event.preventDefault(); go(-1); }
+    if (event.key === 'Home') { event.preventDefault(); update(0); pages[0].scrollIntoView({ behavior: 'smooth' }); }
+    if (event.key === 'End') { event.preventDefault(); update(pages.length - 1); pages[pages.length - 1].scrollIntoView({ behavior: 'smooth' }); }
+  });
+  window.addEventListener('scroll', function () {
+    var best = 0;
+    var min = Infinity;
+    pages.forEach(function (page, index) {
+      var dist = Math.abs(page.getBoundingClientRect().top);
+      if (dist < min) { min = dist; best = index; }
+    });
+    update(best);
+  }, { passive: true });
+  update(0);
+})();
+</script>
+</body>
+</html>
