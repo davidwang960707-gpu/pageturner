@@ -1,9 +1,9 @@
 ---
 name: pageturner
-description: "翻书人 PageTurner — 你的私人文档翻译+精排版专家。PDF / 网页 → 提取全文 → 结构化解析 → 中文翻译 → Apple 极简风 HTML 快速阅读页面。适用于研究报告、白皮书、长文、技术文档。"
+description: "PageTurner Skill / 翻书人 Skill — 你的私人文档翻译+精排版专家。PDF / 网页 → 提取全文 → 结构化解析 → 中文翻译 → Apple 极简风 HTML 快速阅读页面。适用于研究报告、白皮书、长文、技术文档。"
 ---
 
-# 翻书人 PageTurner
+# PageTurner Skill / 翻书人 Skill
 
 把厚重的原文「翻」成可读的网页——你的私人文档翻译+精排版专家。
 

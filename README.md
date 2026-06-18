@@ -1,10 +1,10 @@
-# PageTurner Skill / 翻书人 Skill 
+# PageTurner Skill / 翻书人 Skill
 
 <div align="center">
 
   <img src="https://github.com/davidwang960707-gpu.png" width="120" height="120" alt="王六 avatar" />
 
-  <h3>PageTurner · PDF / 长文档翻译与 HTML 快读版生成 Skill</h3>
+  <h3>PageTurner Skill · PDF / 长文档翻译与 HTML 快读版生成</h3>
 
   <h3>把厚重文档翻成能读完的网页</h3>
 
@@ -19,7 +19,7 @@
   </p>
 
   <p>
-    <a href="https://davidwang960707-gpu.github.io/pageturner/">在线预览：PageTurner 示例站</a>
+    <a href="https://davidwang960707-gpu.github.io/pageturner/">在线预览：PageTurner Skill 示例站</a>
   </p>
 
   <p>
