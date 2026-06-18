@@ -1,0 +1,8 @@
+interface:
+  display_name: "翻书人"
+  short_description: "把 PDF、网页和长文档生成中文 HTML 快读版"
+  brand_color: "#7B61FF"
+  default_prompt: "Use $pageturner to turn this PDF or webpage into a Chinese HTML fast-read edition with structure, key data, visuals, tables, and source links preserved."
+
+policy:
+  allow_implicit_invocation: true
