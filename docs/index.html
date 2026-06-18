@@ -45,6 +45,10 @@
   }
   .brand { font-weight: 760; letter-spacing: 0; }
   .navlinks { display: flex; gap: 18px; color: var(--muted); font-size: 14px; }
+  .repo-link {
+    color: var(--ink);
+    font-weight: 680;
+  }
   .hero {
     min-height: 78vh;
     display: grid;
@@ -198,6 +202,7 @@
       <a href="#examples">示例</a>
       <a href="#workflow">流程</a>
       <a href="#pages">GitHub Pages</a>
+      <a class="repo-link" href="https://github.com/davidwang960707-gpu/pageturner" target="_blank" rel="noreferrer">GitHub</a>
     </div>
   </nav>
 </header>
@@ -211,6 +216,7 @@
       <div class="actions">
         <a class="button primary" href="#examples">看示例结果</a>
         <a class="button" href="#pages">发布方式</a>
+        <a class="button" href="https://github.com/davidwang960707-gpu/pageturner" target="_blank" rel="noreferrer">GitHub 源码</a>
       </div>
     </div>
     <a class="preview" href="examples/enterprise-ai-playbook.html">
@@ -291,7 +297,7 @@
     <div class="shell">
       <div class="section-head">
         <h2>直接发布到 GitHub Pages</h2>
-        <p>`docs/` 目录不需要构建。把仓库推到 GitHub 后，在 Pages 设置里选择 `main / docs` 即可。</p>
+        <p>`docs/` 目录不需要构建。项目仓库在 <a class="repo-link" href="https://github.com/davidwang960707-gpu/pageturner" target="_blank" rel="noreferrer">GitHub</a>，推送后在 Pages 设置里选择 `main / docs` 即可。</p>
       </div>
       <pre><code>pageturner/
 ├── SKILL.md
@@ -308,7 +314,7 @@
 </main>
 
 <footer>
-  <div class="shell">MIT License · PageTurner Skill / 翻书人 Skill · 文档应该被读完，而不只是被下载。</div>
+  <div class="shell">MIT License · <a class="repo-link" href="https://github.com/davidwang960707-gpu/pageturner" target="_blank" rel="noreferrer">GitHub 项目</a> · PageTurner Skill / 翻书人 Skill · 文档应该被读完，而不只是被下载。</div>
 </footer>
 </body>
 </html>
