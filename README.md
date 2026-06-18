@@ -1,7 +1,33 @@
 # PageTurner / 翻书人
 
-> 把厚重 PDF 和长文，从“能打开”变成“真能读完”。
-> PageTurner 是一个面向 Hermes / Claude Skills 的文档翻译与快速阅读 Skill：提取原文、理解结构、翻译成中文，再生成一个自包含的精排版 HTML 页面。
+<div align="center">
+
+  <img src="https://github.com/davidwang960707-gpu.png" width="120" height="120" alt="王六 avatar" />
+
+  <h3>PageTurner · PDF / 长文档翻译与 HTML 快读版生成 Skill</h3>
+
+  <h3>把厚重文档翻成能读完的网页</h3>
+
+  <p>
+    把 PDF、网页、论文和研究报告，从“能打开”推进到“能读完、能分享、能发布”：提取全文、理解结构、翻译成中文，再生成一个自包含的精排版 HTML 快读页面。
+  </p>
+
+  <p>
+    <img src="https://img.shields.io/badge/Document-Translation%20%26%20Layout-111827?style=for-the-badge&logo=googledocs&logoColor=white" alt="Document Translation and Layout" />
+    <img src="https://img.shields.io/badge/Fast%20Read-HTML%20Pages-7B61FF?style=for-the-badge&logo=html5&logoColor=white" alt="Fast Read HTML Pages" />
+    <img src="https://img.shields.io/badge/GitHub%20Pages-Publish%20Ready-0EA5E9?style=for-the-badge&logo=githubpages&logoColor=white" alt="GitHub Pages Publish Ready" />
+  </p>
+
+  <p>
+    <a href="https://davidwang960707-gpu.github.io/pageturner/">在线预览：PageTurner 示例站</a>
+  </p>
+
+  <p>
+    <img src="https://img.shields.io/badge/Hermes%20%2F%20Claude-Skill-4F46E5?style=for-the-badge&logo=anthropic&logoColor=white" alt="Hermes Claude Skill" />
+    <img src="https://img.shields.io/badge/Zero%20Dependency-Single%20HTML-22C55E?style=for-the-badge&logo=files&logoColor=white" alt="Zero Dependency Single HTML" />
+    <img src="https://img.shields.io/badge/Data%20Viz-Readable%20Reports-F59E0B?style=for-the-badge&logo=chartdotjs&logoColor=white" alt="Data Visualization Readable Reports" />
+  </p>
+</div>
 
 ---
 
